@@ -2,31 +2,40 @@
 {% block content %}
 <div class="columns is-variable is-1-mobile is-0-tablet is-3-desktop is-8-widescreen is-2-fullhd tile" style="margin: 10px; color: white">
     <div class="column tile blue">
-        <h3 class="heading">Add a Contact</h3>
-        <form action="{{ url_for('create_contact') }}" method="POST" style="margin-top: 20px; color: white">
+        <form action="{{ url_for('create_contact') }}" class="form" method="POST" style="margin-top: 5px; color: white">
             {{ form.csrf_token }}
             <div class="field">
                 <label class="label">First Name</label>
                 <div class="control">
-                    {{ form.first_name(class="input white", placeholder="Enter First Name") }}
+                    {{ form.first_name(class="input white p-1", placeholder="Enter First Name") }}
                 </div>
             </div>
             <div class="field">
                 <label class="label">Last Name</label>
                 <div class="control">
-                    {{ form.last_name(class="input white", placeholder="Enter Last Name") }}
+                    {{ form.last_name(class="input white p-1", placeholder="Enter Last Name") }}
                 </div>
             </div>
             <div class="field">
                 <label class="label">Email</label>
                 <div class="control">
-                    {{ form.email(class="input white", placeholder="Enter email") }}
+                    {{ form.email(class="input white p-1", placeholder="Enter email") }}
                 </div>
             </div>
             <div class="field">
                 <label class="label">IP Address</label>
                 <div class="control">
-                    {{ form.ip_address(class="input white", placeholder="Enter IP address") }}
+                    {{ form.ip_address(class="input white p-1", placeholder="Enter IP address") }}
+                </div>
+            </div>
+            <div class="field">
+                <label class="label">Contact Type</label>
+                <div class="control">
+                    <div class="select">
+                        {{ form.contact_type(class="input white p-1") }}
+                        <option value="Customer">Customer</option>
+                        <option value="Supplier">Supplier</option>
+                    </div>
                 </div>
             </div>
             <div class="field">
@@ -34,7 +43,7 @@
                     {{ form.submit(class="button is-primary", value="Create Contact") }}
                 </div>
             </div>
-        </form>
+        </form>        
     </div>
     <div class="column tile purple">
         All Contacts
