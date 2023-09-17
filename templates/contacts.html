@@ -1,15 +1,17 @@
-<!-- contacts.html -->
 {% extends 'app_layout.html' %}
 
 {% block content %}
     {% if contacts %}
     <div style="margin: 20px">
-        <div class="level">
+        <div class="level" style="align-items: center;">
             <div class="level-left">
                 <h1 class="m-5">Contacts</h1>
             </div>
             <div class="level-right">
-                <a href="/" class="button is-primary">Create Contact</a>
+                <div class="buttons is-flex-direction-row">
+                    <a href="#" class="button is-info" style="margin-right: 10px">Verify Contact</a>
+                    <a href="/" class="button is-primary">Create Contact</a>
+                </div>
             </div>
         </div>
         <table class="table is-hoverable table-color has-background-info-light is-striped is-narrow is-hoverable is-fullwidth">
@@ -21,6 +23,7 @@
                     <th><strong class="has-text-white">Status</strong></th>
                     <th><strong class="has-text-white">Delete</strong></th>
                     <th><strong class="has-text-white">Edit</strong></th>
+                    <th><strong class="has-text-white">Select</strong></th> <!-- Added new column for checkbox -->
                 </tr>
             </thead>
             <tbody>
@@ -32,6 +35,7 @@
                         <td>{{ contact.status if contact.status else "Pending" }}</td>
                         <td><a href="#">Delete</a></td>
                         <td><a href="#">Edit</a></td>
+                        <td><input type="checkbox" class="checkbox teal" style="opacity: 1 !important; margin-top: 4px" name="contact_id" value="{{ contact.id }}"></td> <!-- Added checkbox with contact ID as value -->
                     </tr>
                 {% endfor %}
             </tbody>
