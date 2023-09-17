@@ -47,23 +47,19 @@ def login():
         return redirect(url_for('home'))
     form = LoginForm()
     if request.method == 'POST':
-        print("Validation", form.validate_on_submit())
         if form.validate_on_submit():
             username = form.username.data
             password = form.password.data
 
             user = User.query.filter_by(username=username).first()
-            print("User Info", user)
             
             if not user or not check_password_hash(user.password, password):
                 flash('Please check your login details and try again.')
                 return redirect(url_for('login'))
 
             login_user(user)
-            print("Redirecting to Home")
             return redirect(url_for('home'))
 
-    print("Loading Get Route")
     return render_template("login.html", form=form)
 
 @app.route("/register", methods=['GET', 'POST'])
@@ -89,6 +85,7 @@ def register():
             flash('Registration successful!')
             user = User.query.filter_by(username=username).first()
             login_user(user)
+            print("User Created")
             return redirect(url_for('home'))
     return render_template("register.html", form=form)
 
