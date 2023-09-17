@@ -29,6 +29,9 @@ class Contact(db.Model):
     address = db.Column(db.String(200))
     status = db.Column(db.String(10))
     ip_address = db.Column(db.String(15), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    user = db.relationship('User', backref=db.backref('contacts', lazy=True)) 
 
 with app.app_context():
     db.create_all()
@@ -143,7 +146,8 @@ def create_contact():
             contact_type=contact_type,
             first_name=first_name,
             email=email,
-            ip_address=ip_address
+            ip_address=ip_address,
+            user_id=current_user.id  
         )
 
         db.session.add(new_contact)
