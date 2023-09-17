@@ -41,9 +41,9 @@ def index():
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
     form = LoginForm()
-    
-
     if request.method == 'POST':
         print("Validation", form.validate_on_submit())
         if form.validate_on_submit():
