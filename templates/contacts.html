@@ -1,0 +1,15 @@
+<!-- contacts.html -->
+{% extends 'app_layout.html' %}
+
+{% block content %}
+    {% if contacts %}
+        <h1>Contacts</h1>
+        <ul>
+            {% for contact in contacts %}
+                <li>{{ contact.name }} - {{ contact.email }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <h1>No contacts yet</h1>
+    {% endif %}
+{% endblock %}

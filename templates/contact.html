@@ -17,6 +17,7 @@
                Sun Tzu
             </p>
           </div>
+          {% if not current_user.is_authenticated %}
           <footer class="card-footer">
             <p class="card-footer-item">
               <span>
@@ -29,6 +30,7 @@
               </span>
             </p>
           </footer>
+          {% endif %}
         </div>
     </div>
     <div class="col login-area">
