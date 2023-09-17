@@ -112,7 +112,85 @@ def what():
 @app.route("/contacts")
 @login_required
 def contacts():
-    return render_template("contacts.html", current_user=current_user)
+    all_contacts = Contact.query.all()
+    return render_template("contacts.html", current_user=current_user, contacts=all_contacts)
+
+@app.route("/create_contact", methods=["GET", "POST"])
+@login_required
+def create_contact():
+    if request.method == "POST":
+        contact_type = request.form.get("contact_type")
+        first_name = request.form.get("first_name")
+        last_name = request.form.get("last_name")
+        email = request.form.get("email")
+        phone_number = request.form.get("phone_number")
+        address = request.form.get("address")
+        status = request.form.get("status")
+        ip_address = request.form.get("ip_address")
+
+        new_contact = Contact(
+            contact_type=contact_type,
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            phone_number=phone_number,
+            address=address,
+            status=status,
+            ip_address=ip_address
+        )
+
+        db.session.add(new_contact)
+        db.session.commit()
+
+        return redirect(url_for("contacts"))
+    
+    return render_template("create_contact.html", current_user=current_user)
+
+@app.route("/update_contact/<int:contact_id>", methods=["GET", "POST"])
+@login_required
+def update_contact(contact_id):
+    contact = Contact.query.get_or_404(contact_id)
+
+    if request.method == "POST":
+        contact.contact_type = request.form.get("contact_type")
+        contact.first_name = request.form.get("first_name")
+        contact.last_name = request.form.get("last_name")
+        contact.email = request.form.get("email")
+        contact.phone_number = request.form.get("phone_number")
+        contact.address = request.form.get("address")
+        contact.status = request.form.get("status")
+        contact.ip_address = request.form.get("ip_address")
+
+        db.session.commit()
+
+        return redirect(url_for("contacts"))
+
+    return render_template("update_contact.html", current_user=current_user, contact=contact)
+
+@app.route("/get_contact", methods=["GET", "POST"])
+@login_required
+def get_contact():
+    if request.method == "POST":
+        email = request.form.get("email")
+        contact = Contact.query.filter_by(email=email).first()
+
+        if contact:
+            # Contact found, do something with it
+            return render_template("contact_details.html", contact=contact)
+        else:
+            # Contact not found
+            return render_template("contact_not_found.html")
+    
+    return render_template("get_contact.html", current_user=current_user)
+
+@app.route("/delete_contact/<int:contact_id>", methods=["POST"])
+@login_required
+def delete_contact(contact_id):
+    contact = Contact.query.get_or_404(contact_id)
+    db.session.delete(contact)
+    db.session.commit()
+
+    return redirect(url_for("contacts"))
 
 @app.route("/docs")
 def docs():
