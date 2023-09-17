@@ -9,3 +9,15 @@
     height: 10vh;
     color: white;
 }
+
+.main-nav {
+    align-items: center;
+}
+
+#nav-main-menu {
+    margin-left: 640px;
+}
+
+.login-button {
+    margin-left: 20px;
+}
