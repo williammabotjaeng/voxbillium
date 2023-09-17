@@ -23,7 +23,7 @@ class Contact(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     contact_type = db.Column(db.String(15), nullable=False)
     first_name = db.Column(db.String(100), nullable=False)
-    last_name = db.Column(db.String(100))
+    last_name = db.Column(db.String(100), nullable=True)
     email = db.Column(db.String(100), nullable=False)
     phone_number = db.Column(db.String(15))
     address = db.Column(db.String(200))
@@ -48,7 +48,7 @@ class RegistrationForm(FlaskForm):
 class ContactForm(FlaskForm):
     contact_type = SelectField('Contact Type',validators=[InputRequired()], choices=[('Customer', 'Customer'), ('Supplier', 'Supplier')])
     first_name = StringField('First Name', validators=[InputRequired(), Length(min=2, max=100)])
-    last_name = StringField('Last Name')
+    last_name = StringField('Last Name',  validators=[Length(min=2, max=100)])
     email = StringField('Email', validators=[InputRequired(), Length(min=6, max=100)])
     phone_number = StringField('Phone Number')
     address = StringField('Address')
@@ -133,21 +133,13 @@ def create_contact():
     if request.method == "POST":
         contact_type = request.form.get("contact_type")
         first_name = request.form.get("first_name")
-        last_name = request.form.get("last_name")
         email = request.form.get("email")
-        phone_number = request.form.get("phone_number")
-        address = request.form.get("address")
-        status = request.form.get("status")
         ip_address = request.form.get("ip_address")
 
         new_contact = Contact(
             contact_type=contact_type,
             first_name=first_name,
-            last_name=last_name,
             email=email,
-            phone_number=phone_number,
-            address=address,
-            status=status,
             ip_address=ip_address
         )
 
