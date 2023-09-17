@@ -3,7 +3,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import InputRequired, Length
 
 app = Flask(__name__)
@@ -44,6 +44,18 @@ class LoginForm(FlaskForm):
 class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[InputRequired(), Length(min=4, max=100)])
     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=64)])
+
+class ContactForm(FlaskForm):
+    contact_type = StringField('Contact Type')
+    first_name = StringField('First Name')
+    last_name = StringField('Last Name')
+    name = StringField('Name', validators=[InputRequired(), Length(min=2, max=100)])
+    email = StringField('Email', validators=[InputRequired(), Length(min=6, max=100)])
+    phone_number = StringField('Phone Number')
+    address = StringField('Address')
+    status = StringField('Status')
+    ip_address = StringField('IP Address', validators=[InputRequired()])
+    submit = SubmitField('Create Contact')
 
 @app.route("/")
 def index():
