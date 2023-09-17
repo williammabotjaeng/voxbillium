@@ -19,6 +19,17 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(20), unique=True, nullable=False)
     password = db.Column(db.String(20), nullable=False)
 
+class Contact(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    contact_type = db.Column(db.String(15), nullable=False)
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100), nullable=False)
+    phone_number = db.Column(db.String(15), nullable=False)
+    address = db.Column(db.String(200), nullable=False)
+    status = db.Column(db.String(10), nullable=False)
+    ip_address = db.Column(db.String(15), nullable=False)
+
 with app.app_context():
     db.create_all()
 
