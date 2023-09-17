@@ -124,8 +124,8 @@ def what():
 @app.route("/contacts")
 @login_required
 def contacts():
-    all_contacts = Contact.query.all()
-    return render_template("contacts.html", current_user=current_user, contacts=all_contacts)
+    contacts = Contact.query.all()
+    return render_template("contacts.html", current_user=current_user, contacts=contacts)
 
 @app.route("/create_contact", methods=["GET", "POST"])
 @login_required

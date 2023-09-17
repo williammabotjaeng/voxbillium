@@ -4,11 +4,30 @@
 {% block content %}
     {% if contacts %}
         <h1>Contacts</h1>
-        <ul>
-            {% for contact in contacts %}
-                <li>{{ contact.name }} - {{ contact.email }}</li>
-            {% endfor %}
-        </ul>
+        <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
+            <thead>
+                <tr>
+                    <th><strong>Name</strong></th>
+                    <th><strong>Email</strong></th>
+                    <th><strong>Phone</strong></th>
+                    <th><strong>Status</strong></th>
+                    <th><strong>Delete</strong></th>
+                    <th><strong>Edit</strong></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for contact in contacts %}
+                    <tr>
+                        <td>{{ contact.name }}</td>
+                        <td>{{ contact.email }}</td>
+                        <td>{{ contact.phone }}</td>
+                        <td>{{ contact.status if contact.status else "Pending" }}</td>
+                        <td><a href="#">Delete</a></td>
+                        <td><a href="#">Edit</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     {% else %}
         <h1>No contacts yet</h1>
     {% endif %}
