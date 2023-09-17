@@ -16,7 +16,7 @@ load_dotenv()
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SECRET_KEY'] = 'QPEunVzlmptwr73MfPz44w=='
-api_key = os.getenv("API_KEY")
+api_token = os.getenv("API_TOKEN")
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
@@ -184,8 +184,8 @@ def verify_contact(contact_id):
     # Handle the response as needed
     if response.status_code == 200:
         verification_result = response.json()
-        verdict = verification_result.get("result", {}).get("verdict")
-
+        verdict = verification_result.get("result", {}).get("data", {}).get("verdict")
+        print("The Verdict", verdict)
         if verdict == "benign":
             contact.status = "Trusted"
         else:
@@ -194,6 +194,7 @@ def verify_contact(contact_id):
         db.session.commit()
 
     return redirect(url_for("contacts"))
+
 
 @app.route("/update_contact/<int:contact_id>", methods=["GET", "POST"])
 @login_required
