@@ -1,3 +1,6 @@
 Flask
 pangea-sdk
 virtualenv
+Flask-Login
+Flask-SQLAlchemy
+Flask-WTF
