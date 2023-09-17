@@ -19,6 +19,9 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(20), unique=True, nullable=False)
     password = db.Column(db.String(20), nullable=False)
 
+with app.app_context():
+    db.create_all()
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -71,7 +74,7 @@ def register():
             if user:
                 flash('Username already exists. Please choose a different one.')
                 print("User exists")
-                return redirect(url_for('home'))
+                return redirect(url_for('register'))
 
             new_user = User(username=username, password=generate_password_hash(password, method='sha256'))
             db.session.add(new_user)
