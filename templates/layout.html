@@ -16,7 +16,7 @@
     <nav class="navbar main-nav" role="navigation" aria-label="main navigation">
         <div class="navbar-brand">
           <a class="" href="/">
-            <img src="{{ url_for('static', filename='img/topolock-logo.png') }}" alt="Logo" width="80" height="124">
+            <img src="{{ url_for('static', filename='img/topolock-logo.png') }}" alt="Logo" style="margin-left: 10px; margin-top: 5px" width="64" height="96">
           </a>
       
           <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
@@ -73,10 +73,10 @@
           </div>
         </div>
       </nav>
-      <header class="teal container row s12">
+      <header class="teal container row s12" style="width: 100%">
         {% block header %}{% endblock %}
       </header> 
-      <main>
+      <main style="width: 100%">
         {% block content %}{% endblock %}
       </main>
 <footer class="footer layout-footer">
