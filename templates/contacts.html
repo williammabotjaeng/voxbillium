@@ -4,7 +4,14 @@
 {% block content %}
     {% if contacts %}
     <div style="margin: 20px">
-        <h1 class="m-5">Contacts</h1>
+        <div class="level">
+            <div class="level-left">
+                <h1 class="m-5">Contacts</h1>
+            </div>
+            <div class="level-right">
+                <a href="/" class="button is-primary">Create Contact</a>
+            </div>
+        </div>
         <table class="table is-hoverable table-color has-background-info-light is-striped is-narrow is-hoverable is-fullwidth">
             <thead>
                 <tr class="teal">
