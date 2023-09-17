@@ -192,6 +192,27 @@ def delete_contact(contact_id):
 
     return redirect(url_for("contacts"))
 
+@app.route("/trusted_contacts", methods=["GET"])
+@login_required
+def get_trusted_contacts():
+    trusted_contacts = Contact.query.filter_by(status="Trusted").all()
+
+    return render_template("trusted_contacts.html", contacts=trusted_contacts)
+
+@app.route("/untrusted_contacts", methods=["GET"])
+@login_required
+def get_untrusted_contacts():
+    untrusted_contacts = Contact.query.filter_by(status="Untrusted").all()
+
+    return render_template("untrusted_contacts.html", contacts=untrusted_contacts)
+
+@app.route("/latest_contact", methods=["GET"])
+@login_required
+def get_latest_contact():
+    latest_contact = Contact.query.order_by(Contact.created_at.desc()).first()
+
+    return render_template("latest_contact.html", contact=latest_contact)
+
 @app.route("/docs")
 def docs():
     return render_template("docs.html")
