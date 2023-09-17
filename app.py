@@ -3,7 +3,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField
 from wtforms.validators import InputRequired, Length
 
 app = Flask(__name__)
@@ -46,7 +46,7 @@ class RegistrationForm(FlaskForm):
     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=64)])
 
 class ContactForm(FlaskForm):
-    contact_type = StringField('Contact Type')
+    contact_type = SelectField('Contact Type', choices=[('Customer', 'Customer'), ('Supplier', 'Supplier')])
     first_name = StringField('First Name')
     last_name = StringField('Last Name')
     name = StringField('Name', validators=[InputRequired(), Length(min=2, max=100)])

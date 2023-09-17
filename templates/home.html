@@ -11,9 +11,11 @@
                 </div>
             </div>
             <div class="field">
-                <label class="label">Last Name</label>
+                <label class="label">Contact Type</label>
                 <div class="control">
-                    {{ form.last_name(class="input white p-1", placeholder="Enter Last Name") }}
+                    <div>
+                        {{ form.contact_type(class="input white p-1") }}
+                    </div>
                 </div>
             </div>
             <div class="field">
@@ -26,16 +28,6 @@
                 <label class="label">IP Address</label>
                 <div class="control">
                     {{ form.ip_address(class="input white p-1", placeholder="Enter IP address") }}
-                </div>
-            </div>
-            <div class="field">
-                <label class="label">Contact Type</label>
-                <div class="control">
-                    <div class="select">
-                        {{ form.contact_type(class="input white p-1") }}
-                        <option value="Customer">Customer</option>
-                        <option value="Supplier">Supplier</option>
-                    </div>
                 </div>
             </div>
             <div class="field">
