@@ -1,7 +1,7 @@
 {% extends 'layout.html' %}
 
 {% block header %}
-  <div class="col s6 main-header">
+  <div class="col s6 main-header" style="align-items: center;">
     <section class="hero is-success">
         <div class="hero-body">
           <p class="title">
@@ -14,7 +14,7 @@
       </section>
   </div>
   <div class="col s6">
-        <img src="{{ url_for('static', filename='img/hero-image.jpg') }}" alt="hero-image" />
+        <img src="{{ url_for('static', filename='img/hero-image.jpg') }}" alt="hero-image" style="margin-top: 10px;"/>
   </div>
 {% endblock %}
 
