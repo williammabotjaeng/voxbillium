@@ -18,6 +18,10 @@ def register():
 def what():
     return render_template("what.html")
 
+@app.route("/docs")
+def docs():
+    return render_template("docs.html")
+
 @app.route("/contact")
 def contact():
     return render_template("contact.html")
