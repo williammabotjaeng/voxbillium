@@ -38,13 +38,47 @@
         </form>        
     </div>
     <div class="column tile purple">
-        All Contacts
+        <div class="heading">All Contacts</div>
+        <div class="tile" style="margin-top: 20px">
+            {% if contacts %}
+        <ul>
+            {% for contact in contacts %}
+                <li><strong class="has-text-white">{{ contact.first_name.capitalize() }}</strong> - <em>{{ contact.status if contact.status else "Pending" }}</em></li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <h1>No contacts yet, Try Create a New Contact!</h1>
+    {% endif %}
+        </div>
+
     </div>
     <div class="column tile teal">
-        Trusted Contacts
+        <div class="heading">Trusted Contacts</div>
+        <div class="tile" style="margin-top: 20px">
+            {% if trusted_contacts %}
+        <ul>
+            {% for contact in trusted_contacts %}
+                <li><strong class="has-text-white">{{ contact.first_name.capitalize() }}</strong> - <em>{{ contact.status if contact.status else "Pending" }}</em></li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <h1>No contacts yet, Try Validating your Contacts!</h1>
+    {% endif %}
+        </div>
     </div>
     <div class="column tile deep-orange">
-        Untrusted Contacts
+        <div class="heading">Untrusted Contacts</div>
+        <div class="tile" style="margin-top: 20px">
+            {% if untrusted_contacts %}
+        <ul>
+            {% for contact in untrusted_contacts %}
+                <li><strong class="has-text-white">{{ contact.first_name.capitalize() }}</strong> - <em>{{ contact.status if contact.status else "Pending" }}</em></li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <h1>No contacts yet, Try Validating your Contacts!</h1>
+    {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}

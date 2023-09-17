@@ -4,3 +4,4 @@ virtualenv
 Flask-Login
 Flask-SQLAlchemy
 Flask-WTF
+python-dotenv

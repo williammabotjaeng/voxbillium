@@ -1,14 +1,45 @@
-<!-- contacts.html -->
 {% extends 'app_layout.html' %}
 
 {% block content %}
     {% if contacts %}
-        <h1>Contacts</h1>
-        <ul>
-            {% for contact in contacts %}
-                <li>{{ contact.name }} - {{ contact.email }}</li>
-            {% endfor %}
-        </ul>
+    <div style="margin: 20px">
+        <div class="level" style="align-items: center;">
+            <div class="level-left">
+                <h1 class="m-5">Contacts</h1>
+            </div>
+            <div class="level-right">
+                <div class="buttons is-flex-direction-row">
+                    <a href="/" class="button is-primary">Create Contact</a>
+                </div>
+            </div>
+        </div>
+        <table class="table is-hoverable table-color has-background-info-light is-striped is-narrow is-hoverable is-fullwidth">
+            <thead>
+                <tr class="teal">
+                    <th><strong class="has-text-white">Name</strong></th>
+                    <th><strong class="has-text-white">Email</strong></th>
+                    <th><strong class="has-text-white">Phone</strong></th>
+                    <th><strong class="has-text-white">Status</strong></th>
+                    <th><strong class="has-text-white">Delete</strong></th>
+                    <th><strong class="has-text-white">Edit</strong></th>
+                    <th><strong class="has-text-white">Verify</strong></th> <!-- Replaced Select with Verify column -->
+                </tr>
+            </thead>
+            <tbody>
+                {% for contact in contacts %}
+                    <tr>
+                        <td>{{ contact.first_name.capitalize() }} {{ contact.last_name.capitalize() if contact.last_name else "" }}</td>
+                        <td>{{ contact.email }}</td>
+                        <td>{{ contact.phone }}</td>
+                        <td>{{ contact.status if contact.status else "Pending" }}</td>
+                        <td><a href="#">Delete</a></td>
+                        <td><a href="#">Edit</a></td>
+                        <td><form method="post" action="/verify/{{ contact.id }}" class="button is-info" style="margin-right: 10px"><button type="submit">Verify</button></form></td> <!-- Replaced checkbox with button -->
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
     {% else %}
         <h1>No contacts yet</h1>
     {% endif %}

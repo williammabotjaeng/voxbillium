@@ -5,10 +5,18 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField
 from wtforms.validators import InputRequired, Length
+from dotenv import load_dotenv
+
+import requests
+import os
 
 app = Flask(__name__)
+
+load_dotenv()
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SECRET_KEY'] = 'QPEunVzlmptwr73MfPz44w=='
+api_token = os.getenv("API_TOKEN")
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
@@ -23,12 +31,15 @@ class Contact(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     contact_type = db.Column(db.String(15), nullable=False)
     first_name = db.Column(db.String(100), nullable=False)
-    last_name = db.Column(db.String(100))
+    last_name = db.Column(db.String(100), nullable=True)
     email = db.Column(db.String(100), nullable=False)
     phone_number = db.Column(db.String(15))
     address = db.Column(db.String(200))
     status = db.Column(db.String(10))
     ip_address = db.Column(db.String(15), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    user = db.relationship('User', backref=db.backref('contacts', lazy=True)) 
 
 with app.app_context():
     db.create_all()
@@ -48,7 +59,7 @@ class RegistrationForm(FlaskForm):
 class ContactForm(FlaskForm):
     contact_type = SelectField('Contact Type',validators=[InputRequired()], choices=[('Customer', 'Customer'), ('Supplier', 'Supplier')])
     first_name = StringField('First Name', validators=[InputRequired(), Length(min=2, max=100)])
-    last_name = StringField('Last Name')
+    last_name = StringField('Last Name',  validators=[Length(min=2, max=100)])
     email = StringField('Email', validators=[InputRequired(), Length(min=6, max=100)])
     phone_number = StringField('Phone Number')
     address = StringField('Address')
@@ -111,11 +122,14 @@ def register():
             return redirect(url_for('home'))
     return render_template("register.html", form=form)
 
-@app.route("/home")
 @login_required
+@app.route("/home")
 def home():
     form = ContactForm()
-    return render_template("home.html", current_user=current_user, form=form)
+    contacts = Contact.query.filter_by(user_id=current_user.id).all()
+    trusted_contacts = Contact.query.filter_by(user_id=current_user.id, status="Trusted").all()
+    untrusted_contacts = Contact.query.filter_by(user_id=current_user.id, status="Untrusted").all()
+    return render_template("home.html", current_user=current_user, form=form, contacts=contacts, trusted_contacts=trusted_contacts, untrusted_contacts=untrusted_contacts)
 
 @app.route("/what")
 def what():
@@ -124,8 +138,8 @@ def what():
 @app.route("/contacts")
 @login_required
 def contacts():
-    all_contacts = Contact.query.all()
-    return render_template("contacts.html", current_user=current_user, contacts=all_contacts)
+    contacts = Contact.query.filter_by(user_id=current_user.id).all()
+    return render_template("contacts.html", current_user=current_user, contacts=contacts)
 
 @app.route("/create_contact", methods=["GET", "POST"])
 @login_required
@@ -133,22 +147,15 @@ def create_contact():
     if request.method == "POST":
         contact_type = request.form.get("contact_type")
         first_name = request.form.get("first_name")
-        last_name = request.form.get("last_name")
         email = request.form.get("email")
-        phone_number = request.form.get("phone_number")
-        address = request.form.get("address")
-        status = request.form.get("status")
         ip_address = request.form.get("ip_address")
 
         new_contact = Contact(
             contact_type=contact_type,
             first_name=first_name,
-            last_name=last_name,
             email=email,
-            phone_number=phone_number,
-            address=address,
-            status=status,
-            ip_address=ip_address
+            ip_address=ip_address,
+            user_id=current_user.id  
         )
 
         db.session.add(new_contact)
@@ -157,6 +164,36 @@ def create_contact():
         return redirect(url_for("contacts"))
     
     return render_template("create_contact.html", current_user=current_user)
+
+@app.route("/verify/<int:contact_id>", methods=["POST"])
+@login_required
+def verify_contact(contact_id):
+    contact = Contact.query.get_or_404(contact_id)
+
+    # Perform verification process using the ip_address field
+    verification_data = {
+        "ip": contact.ip_address,
+        "provider": "cymru"
+    }
+    headers = {
+        "Authorization": f"Bearer {api_token}",
+        "Content-Type": "application/json"
+    }
+    response = requests.post("https://ip-intel.aws.eu.pangea.cloud/v1/reputation", json=verification_data, headers=headers)
+
+    # Handle the response as needed
+    if response.status_code == 200:
+        verification_result = response.json()
+        verdict = verification_result.get("result", {}).get("data", {}).get("verdict")
+        if verdict == "benign":
+            contact.status = "Trusted"
+        else:
+            contact.status = "Untrusted"
+
+        db.session.commit()
+
+    return redirect(url_for("contacts"))
+
 
 @app.route("/update_contact/<int:contact_id>", methods=["GET", "POST"])
 @login_required
