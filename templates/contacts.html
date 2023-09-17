@@ -34,7 +34,7 @@
                         <td>{{ contact.status if contact.status else "Pending" }}</td>
                         <td><a href="#">Delete</a></td>
                         <td><a href="#">Edit</a></td>
-                        <td><a href="#" class="button is-info" style="margin-right: 10px" onclick="verifyContact('{{ contact.id }}')">Verify</a></td> <!-- Replaced checkbox with button -->
+                        <td><a href="/verify/{{ contact.id }}" class="button is-info" style="margin-right: 10px">Verify</a></td> <!-- Replaced checkbox with button -->
                     </tr>
                 {% endfor %}
             </tbody>
@@ -43,11 +43,4 @@
     {% else %}
         <h1>No contacts yet</h1>
     {% endif %}
-
-    <script>
-        function verifyContact(contactId) {
-            // Add your verification logic here
-            console.log('Verifying contact with ID:', contactId);
-        }
-    </script>
 {% endblock %}
