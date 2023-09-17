@@ -185,7 +185,6 @@ def verify_contact(contact_id):
     if response.status_code == 200:
         verification_result = response.json()
         verdict = verification_result.get("result", {}).get("data", {}).get("verdict")
-        print("The Verdict", verdict)
         if verdict == "benign":
             contact.status = "Trusted"
         else:
