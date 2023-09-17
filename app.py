@@ -8,7 +8,7 @@ from wtforms.validators import InputRequired, Length
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
-app.config['SECRET_KEY'] = 'your-secret-key'
+app.config['SECRET_KEY'] = 'QPEunVzlmptwr73MfPz44w=='
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
