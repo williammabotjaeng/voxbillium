@@ -115,7 +115,10 @@ def register():
 @login_required
 def home():
     form = ContactForm()
-    return render_template("home.html", current_user=current_user, form=form)
+    contacts = Contact.query.all()
+    trusted_contacts = Contact.query.filter_by(status="Trusted").all()
+    untrusted_contacts = Contact.query.filter_by(status="Untrusted").all()
+    return render_template("home.html", current_user=current_user, form=form, contacts=contacts, trusted_contacts=trusted_contacts, untrusted_contacts=untrusted_contacts)
 
 @app.route("/what")
 def what():
