@@ -104,7 +104,7 @@ def what():
 @app.route("/contacts")
 @login_required
 def contacts():
-    return render_template("contacts.html")
+    return render_template("contacts.html", current_user=current_user)
 
 @app.route("/docs")
 def docs():
@@ -112,7 +112,7 @@ def docs():
 
 @app.route("/contact")
 def contact():
-    return render_template("contact.html")
+    return render_template("contact.html", current_user=current_user)
 
 @app.route("/logout")
 @login_required
