@@ -9,10 +9,11 @@
     <div class="col login-area">
       <h2 style="color: #48c78e; font-weight: bold;">Login</h2>
       <br>
-      <form action="/login" method="POST">
+      <form action="{{ url_for('login') }}" method="POST">
+      {{ form.csrf_token }}
       <div class="field">
           <p class="control has-icons-left has-icons-right">
-          <input class="input" type="email" placeholder="Email" name="email">
+          {{ form.username(class="input", placeholder="Email") }}
           <span class="icon is-small is-left">
               <i class="fas fa-envelope"></i>
           </span>
@@ -23,7 +24,7 @@
       </div>
       <div class="field">
           <p class="control has-icons-left">
-          <input class="input" type="password" placeholder="Password" name="password">
+          {{ form.password(class="input", placeholder="Password") }}
           <span class="icon is-small is-left">
               <i class="fas fa-lock"></i>
           </span>

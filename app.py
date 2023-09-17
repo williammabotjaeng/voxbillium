@@ -42,46 +42,48 @@ def index():
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     form = LoginForm()
-    if form.validate_on_submit():
-        username = form.username.data
-        password = form.password.data
+    
 
-        user = User.query.filter_by(username=username).first()
-        print("User Infor", user)
-        if not user or not check_password_hash(user.password, password):
-            flash('Please check your login details and try again.')
-            return redirect(url_for('login'))
+    if request.method == 'POST':
+        print("Validation", form.validate_on_submit())
+        if form.validate_on_submit():
+            username = form.username.data
+            password = form.password.data
 
-        login_user(user)
-        print("Redirecting to Home")
-        return redirect(url_for('home'))
+            user = User.query.filter_by(username=username).first()
+            print("User Info", user)
+            
+            if not user or not check_password_hash(user.password, password):
+                flash('Please check your login details and try again.')
+                return redirect(url_for('login'))
+
+            login_user(user)
+            print("Redirecting to Home")
+            return redirect(url_for('home'))
+
     print("Loading Get Route")
     return render_template("login.html", form=form)
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
-    print("Method Loading", request.method)
+   
     if request.method == 'POST':
-        print("Inside POST option")
-        print(form.validate_on_submit())
         if form.validate_on_submit():
             username = form.username.data
             password = form.password.data
 
             user = User.query.filter_by(username=username).first()
-            print("User Information", user)
             if user:
                 flash('Username already exists. Please choose a different one.')
-                print("User exists")
-                return redirect(url_for('register'))
+                return redirect(url_for('login'))
 
             new_user = User(username=username, password=generate_password_hash(password, method='sha256'))
             db.session.add(new_user)
             db.session.commit()
-            print("User Created!")
+          
+            flash('Registration successful!')
             return redirect(url_for('home'))
-    print("Loading GET Registration page")
     return render_template("register.html", form=form)
 
 @app.route("/home")
