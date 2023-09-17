@@ -114,13 +114,13 @@ def register():
             return redirect(url_for('home'))
     return render_template("register.html", form=form)
 
-@app.route("/home")
 @login_required
+@app.route("/home")
 def home():
     form = ContactForm()
-    contacts = Contact.query.all()
-    trusted_contacts = Contact.query.filter_by(status="Trusted").all()
-    untrusted_contacts = Contact.query.filter_by(status="Untrusted").all()
+    contacts = Contact.query.filter_by(user_id=current_user.id).all()
+    trusted_contacts = Contact.query.filter_by(user_id=current_user.id, status="Trusted").all()
+    untrusted_contacts = Contact.query.filter_by(user_id=current_user.id, status="Untrusted").all()
     return render_template("home.html", current_user=current_user, form=form, contacts=contacts, trusted_contacts=trusted_contacts, untrusted_contacts=untrusted_contacts)
 
 @app.route("/what")
