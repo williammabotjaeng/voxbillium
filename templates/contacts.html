@@ -34,7 +34,7 @@
                         <td>{{ contact.status if contact.status else "Pending" }}</td>
                         <td><a href="#">Delete</a></td>
                         <td><a href="#">Edit</a></td>
-                        <td><a href="/verify/{{ contact.id }}" class="button is-info" style="margin-right: 10px">Verify</a></td> <!-- Replaced checkbox with button -->
+                        <td><form method="post" action="/verify/{{ contact.id }}" class="button is-info" style="margin-right: 10px"><button type="submit">Verify</button></form></td> <!-- Replaced checkbox with button -->
                     </tr>
                 {% endfor %}
             </tbody>

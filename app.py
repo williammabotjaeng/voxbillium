@@ -6,6 +6,8 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField
 from wtforms.validators import InputRequired, Length
 
+import requests
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SECRET_KEY'] = 'QPEunVzlmptwr73MfPz44w=='
@@ -156,6 +158,36 @@ def create_contact():
         return redirect(url_for("contacts"))
     
     return render_template("create_contact.html", current_user=current_user)
+
+@app.route("/verify/<int:contact_id>", methods=["POST"])
+@login_required
+def verify_contact(contact_id):
+    contact = Contact.query.get_or_404(contact_id)
+
+    # Perform verification process using the ip_address field
+    verification_data = {
+        "ip": contact.ip_address,
+        "provider": "cymru"
+    }
+    headers = {
+        "Authorization": f"Bearer {api_token}",
+        "Content-Type": "application/json"
+    }
+    response = requests.post("https://ip-intel.aws.eu.pangea.cloud/v1/reputation", json=verification_data, headers=headers)
+
+    # Handle the response as needed
+    if response.status_code == 200:
+        verification_result = response.json()
+        verdict = verification_result.get("result", {}).get("verdict")
+
+        if verdict == "benign":
+            contact.status = "Trusted"
+        else:
+            contact.status = "Untrusted"
+
+        db.session.commit()
+
+    return redirect(url_for("contacts"))
 
 @app.route("/update_contact/<int:contact_id>", methods=["GET", "POST"])
 @login_required
