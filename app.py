@@ -87,6 +87,8 @@ def register():
             db.session.commit()
           
             flash('Registration successful!')
+            user = User.query.filter_by(username=username).first()
+            login_user(user)
             return redirect(url_for('home'))
     return render_template("register.html", form=form)
 
