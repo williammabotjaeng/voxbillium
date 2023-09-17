@@ -115,7 +115,8 @@ def register():
 @app.route("/home")
 @login_required
 def home():
-    return render_template("home.html", current_user=current_user)
+    form = ContactForm()
+    return render_template("home.html", current_user=current_user, form=form)
 
 @app.route("/what")
 def what():
