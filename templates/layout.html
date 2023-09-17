@@ -55,7 +55,7 @@
               </div>
             </div>
           </div>
-      
+          {% if current_user.is_authenticated %}
           <div class="navbar-end">
             <div class="navbar-item">
               <div class="buttons">
@@ -68,6 +68,21 @@
               </div>
             </div>
           </div>
+          {% else %}
+          <div class="navbar-end">
+            <div class="navbar-item">
+              <div class="buttons">
+                <a href="/contacts" class="button is-primary">
+                  <strong>Contacts</strong>
+                </a>
+                <a href="/logout" class="button is-light login-button">
+                  Logout
+                </a>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
         </div>
       </nav>
       <header class="teal container row s12" style="width: 100%">

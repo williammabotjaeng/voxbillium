@@ -95,11 +95,16 @@ def register():
 @app.route("/home")
 @login_required
 def home():
-    return render_template("home.html")
+    return render_template("home.html", current_user=current_user)
 
 @app.route("/what")
 def what():
     return render_template("what.html")
+
+@app.route("/contacts")
+@login_required
+def contacts():
+    return render_template("contacts.html")
 
 @app.route("/docs")
 def docs():
