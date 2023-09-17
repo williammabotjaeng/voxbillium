@@ -23,11 +23,11 @@ class Contact(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     contact_type = db.Column(db.String(15), nullable=False)
     first_name = db.Column(db.String(100), nullable=False)
-    last_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100))
     email = db.Column(db.String(100), nullable=False)
-    phone_number = db.Column(db.String(15), nullable=False)
-    address = db.Column(db.String(200), nullable=False)
-    status = db.Column(db.String(10), nullable=False)
+    phone_number = db.Column(db.String(15))
+    address = db.Column(db.String(200))
+    status = db.Column(db.String(10))
     ip_address = db.Column(db.String(15), nullable=False)
 
 with app.app_context():
@@ -46,10 +46,9 @@ class RegistrationForm(FlaskForm):
     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=64)])
 
 class ContactForm(FlaskForm):
-    contact_type = SelectField('Contact Type', choices=[('Customer', 'Customer'), ('Supplier', 'Supplier')])
-    first_name = StringField('First Name')
+    contact_type = SelectField('Contact Type',validators=[InputRequired()], choices=[('Customer', 'Customer'), ('Supplier', 'Supplier')])
+    first_name = StringField('First Name', validators=[InputRequired(), Length(min=2, max=100)])
     last_name = StringField('Last Name')
-    name = StringField('Name', validators=[InputRequired(), Length(min=2, max=100)])
     email = StringField('Email', validators=[InputRequired(), Length(min=6, max=100)])
     phone_number = StringField('Phone Number')
     address = StringField('Address')
