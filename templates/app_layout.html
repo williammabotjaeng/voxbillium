@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/android-chrome-192x192.png') }}" type="image/png">
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma-rtl.min.css">
+    <title>TopoLock | Secure Location</title>
+</head>
+<body>
+    <nav class="navbar main-nav" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+          <a class="" href="/">
+            <img src="{{ url_for('static', filename='img/topolock-logo.png') }}" alt="Logo" style="margin-left: 10px; margin-top: 5px" width="64" height="96">
+          </a>
+      
+          <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          </a>
+        </div>
+      
+        <div id="nav-main-menu" class="navbar-menu">
+          <div class="navbar-start">
+            <a href="/" class="navbar-item">
+              Home
+            </a>
+      
+            <a href="/docs" class="navbar-item">
+              Documentation
+            </a>
+      
+            <div class="navbar-item has-dropdown is-hoverable">
+              <a class="navbar-link">
+                More
+              </a>
+      
+              <div class="navbar-dropdown">
+                <a href="/what" class="navbar-item">
+                  What is TopLock?
+                </a>
+                <a href="/contact" class="navbar-item">
+                  Contact
+                </a>
+                <hr class="navbar-divider">
+                <a href="mailto:williammabotjaeng@gmail.com" class="navbar-item">
+                  Report an issue
+                </a>
+              </div>
+            </div>
+          </div>
+          {% if not current_user.is_authenticated %}
+          <div class="navbar-end">
+            <div class="navbar-item">
+              <div class="buttons">
+                <a href="/register" class="button is-primary">
+                  <strong>Sign up</strong>
+                </a>
+                <a href="/login" class="button is-light login-button">
+                  Log in
+                </a>
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <div class="navbar-end">
+            <div class="navbar-item">
+              <div class="buttons">
+                <a href="/contacts" class="button is-primary">
+                  <strong>Contacts</strong>
+                </a>
+                <a href="/logout" class="button is-light login-button">
+                  Logout
+                </a>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+        </div>
+      </nav>
+      <main style="width: 100%">
+        {% block content %}{% endblock %}
+      </main>
+<footer class="footer teal layout-footer">
+    <p>Copyright &copy; 2023 TopoLock</p>
+</footer>  
+   <!-- Compiled and minified JavaScript -->
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</body>
+</html>
