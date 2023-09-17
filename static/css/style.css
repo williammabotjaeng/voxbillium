@@ -25,3 +25,22 @@
 .main-header {
     margin-top: 10px;
 }
+
+.landing-page-content {
+    display: flex;
+    flex-direction: row;
+}
+
+.login-area {
+    width: 40%;
+    height: 60vh;
+    margin-left: 40px;
+    margin-top: 40px;
+}
+
+.quote-links {
+    width: 40%;
+    height: 60vh;
+    margin-left: 140px;
+    margin-top: 20px;
+}
