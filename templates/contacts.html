@@ -9,7 +9,6 @@
             </div>
             <div class="level-right">
                 <div class="buttons is-flex-direction-row">
-                    <a href="#" class="button is-info" style="margin-right: 10px">Verify Contact</a>
                     <a href="/" class="button is-primary">Create Contact</a>
                 </div>
             </div>
@@ -23,7 +22,7 @@
                     <th><strong class="has-text-white">Status</strong></th>
                     <th><strong class="has-text-white">Delete</strong></th>
                     <th><strong class="has-text-white">Edit</strong></th>
-                    <th><strong class="has-text-white">Select</strong></th> <!-- Added new column for checkbox -->
+                    <th><strong class="has-text-white">Verify</strong></th> <!-- Replaced Select with Verify column -->
                 </tr>
             </thead>
             <tbody>
@@ -35,7 +34,7 @@
                         <td>{{ contact.status if contact.status else "Pending" }}</td>
                         <td><a href="#">Delete</a></td>
                         <td><a href="#">Edit</a></td>
-                        <td><input type="checkbox" class="checkbox teal" style="opacity: 1 !important; margin-top: 4px" name="contact_id" value="{{ contact.id }}"></td> <!-- Added checkbox with contact ID as value -->
+                        <td><a href="#" class="button is-info" style="margin-right: 10px" onclick="verifyContact('{{ contact.id }}')">Verify</a></td> <!-- Replaced checkbox with button -->
                     </tr>
                 {% endfor %}
             </tbody>
@@ -44,4 +43,11 @@
     {% else %}
         <h1>No contacts yet</h1>
     {% endif %}
+
+    <script>
+        function verifyContact(contactId) {
+            // Add your verification logic here
+            console.log('Verifying contact with ID:', contactId);
+        }
+    </script>
 {% endblock %}
