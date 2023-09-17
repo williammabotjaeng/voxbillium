@@ -1,26 +1,17 @@
 {% extends 'app_layout.html' %}
-
-{% block header %}
-  <div class="col s6 main-header" style="align-items: center;">
-    <section class="hero is-success">
-        <div class="hero-body">
-          <p class="title">
-            Welcome to TopoLock
-          </p>
-          <p class="subtitle">
-            Secure Location
-          </p>
-        </div>
-      </section>
-  </div>
-  <div class="col s6">
-        <img src="{{ url_for('static', filename='img/hero-image.jpg') }}" alt="hero-image" style="margin-top: 10px;"/>
-  </div>
-{% endblock %}
-
 {% block content %}
-<div>
-    Home
-    <a href="/logout">Logout</a>
-</div>
+<div class="columns is-variable is-1-mobile is-0-tablet is-3-desktop is-8-widescreen is-2-fullhd tile" style="margin: 10px; color: white">
+    <div class="column tile teal">
+      Latest Contact
+    </div>
+    <div class="column tile purple">
+      All Contacts
+    </div>
+    <div class="column tile lime">
+      Trusted Contacts
+    </div>
+    <div class="column tile deep-orange">
+      Untrusted Contacts
+    </div>
+  </div>
 {% endblock %}
