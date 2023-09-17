@@ -5,12 +5,18 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField
 from wtforms.validators import InputRequired, Length
+from dotenv import load_dotenv
 
 import requests
+import os
 
 app = Flask(__name__)
+
+load_dotenv()
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SECRET_KEY'] = 'QPEunVzlmptwr73MfPz44w=='
+api_key = os.getenv("API_KEY")
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
