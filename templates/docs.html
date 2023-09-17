@@ -1,15 +1,66 @@
 {% extends 'layout.html' %}
 
 {% block header %}
-  <h1>{% block title %}Documentation{% endblock %}</h1>
+  <h1>{% block title %}{% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
-  <form method="post">
-    <label for="username">Username</label>
-    <input name="username" id="username" required>
-    <label for="password">Password</label>
-    <input type="password" name="password" id="password" required>
-    <input type="submit" value="Register">
-  </form>
+
+<h2 id="introduction">1. Introduction</h2>
+<p>Welcome to the TopoLock web application documentation. This guide will walk you through the installation and setup process, user registration, login, and the various features and functionalities of the TopoLock web application.</p>
+
+<h2 id="installation-and-setup">2. Installation and Setup</h2>
+<p>To use the TopoLock web application, follow these steps:</p>
+<ol>
+    <li>Open your preferred web browser.</li>
+    <li>Go to the TopoLock website (<a href="http://www.topolock.com">www.topolock.com</a>).</li>
+    <li>Click on the "Sign Up" button to create a new account.</li>
+    <li>Fill in the required information and click on the "Register" button.</li>
+    <li>You will receive a verification email to activate your account. Follow the instructions in the email to complete the registration process.</li>
+</ol>
+
+<h2 id="user-registration">3. User Registration</h2>
+<p>To register as a new user on the TopoLock web application, follow these steps:</p>
+<ol>
+    <li>Open the TopoLock website (<a href="http://www.topolock.com">www.topolock.com</a>).</li>
+    <li>Click on the "Sign Up" button.</li>
+    <li>Fill in your email address, password, and other required details.</li>
+    <li>After filling in the necessary information, click on the "Register" button.</li>
+    <li>You will receive a verification email to activate your account. Follow the instructions in the email to complete the registration process.</li>
+</ol>
+
+<h2 id="user-login">4. User Login</h2>
+<p>To log in to your TopoLock account, follow these steps:</p>
+<ol>
+    <li>Open the TopoLock website (<a href="http://www.topolock.com">www.topolock.com</a>).</li>
+    <li>Click on the "Log In" button.</li>
+    <li>Enter your registered email address and password.</li>
+    <li>Click on the "Log In" button to access your account.</li>
+</ol>
+
+<h2 id="user-profile">5. User Profile</h2>
+<p>Once logged in, you can access and manage your user profile on the TopoLock web application. Here are some features available in the user profile:</p>
+<ul>
+    <li>Update Profile: You can edit your personal information such as name, profile picture, and contact details.</li>
+    <li>Change Password: You have the option to change your account password for added security.</li>
+    <li>Manage Security Settings: You can enable two-factor authentication and set up additional security measures to protect your account.</li>
+</ul>
+
+<h2 id="topolock-api">6. TopoLock API</h2>
+<p>The TopoLock web application provides a comprehensive API for developers to integrate its secure file storage and sharing capabilities into their own applications. Here are some key features of the TopoLock API:</p>
+<ul>
+    <li>API Authentication: Developers can obtain API keys and access tokens to authenticate their requests to the TopoLock API.</li>
+    <li>Secure File Upload: Developers can securely upload files to the TopoLock platform using the API. The files are encrypted and stored with access control restrictions.</li>
+    <li>File Access Control: The TopoLock API allows developers to manage file access control, providing fine-grained permissions to users or groups.</li>
+</ul>
+
+<h2 id="troubleshooting">7. Troubleshooting</h2>
+<p>If you encounter any issues or have questions about the TopoLock web application, please refer to the following resources:</p>
+<ul>
+    <li>FAQ: Visit the TopoLock website for frequently asked questions and their answers.</li>
+    <li>Support: Contact our support team via email or live chat for assistance with any technical or user-related issues.</li>
+</ul>
+
+<h2 id="conclusion">8. Conclusion</h2>
+<p>Congratulations! You have successfully registered and logged in to the TopoLock web application. Enjoy the secure file storage and sharing capabilities provided by TopoLock. If you are a developer, explore the TopoLock API to extend its functionality and integrate it into your own applications. Should you require any assistance, please refer to the provided resources for troubleshooting and support.</p>
 {% endblock %}
