@@ -40,7 +40,8 @@
     </div>
     {% else %}
         <div style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
-            <h1 style="margin-top: 80px;">No Logs yet</h1>
+            <h1 style="margin-top: 80px;">No Activity yet, <a href="/">Try Creating a Contact...</a></h1>
+            <img src="{{ url_for('static', filename='img/empty_icon.png') }}" width="10%" alt="empty_state">
         </div>
     {% endif %}
 
