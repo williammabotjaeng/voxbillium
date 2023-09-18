@@ -12,6 +12,7 @@
                     <th><strong class="has-text-white">Action</strong></th>
                     <th><strong class="has-text-white">Target</strong></th>
                     <th><strong class="has-text-white">Status</strong></th>
+                    <th><strong class="has-text-white">DateTime</strong></th>
                 </tr>
             </thead>
             <tbody id="logsTableBody">
@@ -22,6 +23,7 @@
                         <td>{{ log.action }}</td>
                         <td>{{ log.target }}</td>
                         <td>{{ log.status }}</td>
+                        <td>{{ log.request_time }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
@@ -61,8 +63,9 @@
                 const action = row.querySelector('td:nth-child(3)').textContent;
                 const target = row.querySelector('td:nth-child(4)').textContent;
                 const status = row.querySelector('td:nth-child(5)').textContent;
+                const request_time = row.querySelector('td:nth-child(6)').textContent;
 
-                return { message, actor, action, target, status };
+                return { message, actor, action, target, status, request_time };
             });
 
             // Clear the existing logs
@@ -77,7 +80,9 @@
                     $('<td>').text(log.actor),
                     $('<td>').text(log.action),
                     $('<td>').text(log.target),
-                    $('<td>').text(log.status)
+                    $('<td>').text(log.status),
+                    $('<td>').text(log.request_time)
+                    
                 );
 
                 $('#logsTableBody').append(row);

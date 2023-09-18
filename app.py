@@ -7,9 +7,13 @@ from flask_mail import Message, Mail
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, TextAreaField
 from wtforms.validators import InputRequired, Length, DataRequired, Email
 from dotenv import load_dotenv
+from datetime import datetime
+import moment
 
 import requests
 import os
+
+
 
 app = Flask(__name__)
 
@@ -58,7 +62,7 @@ class Log(db.Model):
     action = db.Column(db.String(100))
     target = db.Column(db.String(100))
     status = db.Column(db.String(100))
-    log_time = db.Column(db.String(100))
+    request_time = db.Column(db.String(100))
 
 with app.app_context():
     db.create_all()
@@ -232,7 +236,7 @@ def create_contact():
             action='create',
             target='Contact',
             status='success',
-            log_time=res['request_time']
+            request_time=res['request_time']
         )
         db.session.add(log)
         db.session.commit()
@@ -276,7 +280,7 @@ def delete_contact(contact_id):
         action='delete',
         target='Contact',
         status='success',
-        log_time=res['request_time']
+        request_time=res['request_time']
     )
     db.session.add(log)
     db.session.commit()
@@ -326,7 +330,7 @@ def edit_contact(contact_id):
             action='update',
             target='Contact',
             status='success',
-            log_time=res['request_time']
+            request_time=res['request_time']
         )
         db.session.add(log)
         db.session.commit()
@@ -373,8 +377,10 @@ def logs():
 
     # Retrieve logs from the database with the current_user's id as the actor field
     logs = Log.query.filter_by(actor=user_id).all()
+    for log in logs:
+        print(log.request_time)
 
-    return render_template("logs.html", logs=logs)
+    return render_template("logs.html", logs=logs, moment=moment, datetime=datetime)
 
 @app.route("/get_contact", methods=["GET", "POST"])
 @login_required
