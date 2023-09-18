@@ -252,11 +252,13 @@ def delete_contact(contact_id):
 @login_required
 def edit_contact(contact_id):
     contact = Contact.query.filter_by(user_id=current_user.id, id=contact_id).first()
+    print("Contact: ", contact)
     if not contact:
         return redirect(url_for("contacts"))
 
     if request.method == "POST":
         # Update the contact object with the new data from the form
+        print(request.form)
         contact.first_name = request.form.get("first_name")
         contact.last_name = request.form.get("last_name")
         contact.email = request.form.get("email")
@@ -265,6 +267,7 @@ def edit_contact(contact_id):
         contact.status = request.form.get("status")
         contact.ip_address = request.form.get("ip_address")
         db.session.commit()
+        print("Done, Saved Data!")
         return redirect(url_for("contacts"))
     else:
         return render_template("edit_contact.html", current_user=current_user, contact=contact)
