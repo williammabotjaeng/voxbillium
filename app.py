@@ -140,6 +140,27 @@ def home():
 def what():
     return render_template("what.html")
 
+@app.route("/getintouch", methods=["GET", "POST"])
+def contact():
+    form = ContactForm()
+    if form.validate_on_submit():
+        name = form.name.data
+        email = form.email.data
+        message = form.message.data
+
+        msg = Message(
+            subject="New Message from Contact Form",
+            sender=app.config["MAIL_USERNAME"],
+            recipients=["your-email@gmail.com"],  # Replace with your email address
+            body=f"Name: {name}\nEmail: {email}\nMessage: {message}"
+        )
+        mail.send(msg)
+
+        flash("Your message has been sent successfully!", "success")
+        return redirect(url_for("contact"))
+
+    return render_template("getintouch.html", form=form)
+
 @app.route("/contacts")
 @login_required
 def contacts():
