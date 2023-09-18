@@ -33,7 +33,7 @@
           {% endif %}
         </div>
     </div>
-    <div class="col login-area">
+    <div class="col login-area" style="margin-top: -10px">
         <h2 style="color: #48c78e; font-weight: bold;">Get in Touch</h2>
         <br>
       <form method="POST" action="{{ url_for('contact') }}">
@@ -44,8 +44,9 @@
         <div class="form-group">
           {{ form.email.label }} {{ form.email(class="form-control") }}
         </div>
+        <br />
         <div class="form-group">
-          {{ form.message.label }} {{ form.message(class="form-control") }}
+          {{ form.message.label }} {{ form.message(class="form-control tall-textarea") }}
         </div>
         <button type="submit" class="btn btn-primary">Send</button>
       </form>

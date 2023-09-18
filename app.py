@@ -78,7 +78,7 @@ class ContactForm(FlaskForm):
 class ContactUsForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
     email = StringField("Email", validators=[DataRequired()])
-    message = TextAreaField("Message", render_kw={ "rows": 5 }, validators=[DataRequired()])
+    message = TextAreaField("Message", validators=[DataRequired()])
     submit = SubmitField("Send")
 
 @app.route("/")
