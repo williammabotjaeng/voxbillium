@@ -51,6 +51,10 @@ class Contact(db.Model):
     address = db.Column(db.String(200))
     status = db.Column(db.String(10))
     ip_address = db.Column(db.String(15), nullable=False)
+    vpn_status = db.Column(db.String(15), nullable=False)
+    proxy_status = db.Column(db.String(15), nullable=False)
+    sanction_status = db.Column(db.String(15), nullable=False)
+    breached_status = db.Column(db.String(15), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     user = db.relationship('User', backref=db.backref('contacts', lazy=True)) 
@@ -170,7 +174,7 @@ def home():
 
 @login_required
 @app.route("/compliance", methods=["GET"])
-def compliance_home(contact_id):
+def compliance_home():
     contacts = Contact.query.filter_by(user_id=current_user.id).all()
     return render_template("compliance.html", current_user=current_user, contacts=contacts)
 
