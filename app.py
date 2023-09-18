@@ -169,10 +169,93 @@ def home():
     return render_template("home.html", current_user=current_user, form=form, contacts=contacts, trusted_contacts=trusted_contacts, untrusted_contacts=untrusted_contacts)
 
 @login_required
-@app.route("/compliance")
-def compliance():
-    contacts = Contact.query.filter_by(user_id=current_user.id).all()
-    return render_template("compliance.html", current_user=current_user, contacts=contacts)
+@app.route("/compliance/<int:contact_id>", methods=["POST"])
+def compliance(contact_id):
+    # Perform verification process using the ip_address field
+    verification_data = {
+        "ip": contact.ip_address,
+        "provider": "digitalelement"
+    }
+    headers = {
+        "Authorization": f"Bearer {api_token}",
+        "Content-Type": "application/json"
+    }
+    vpn_response = requests.post("https://ip-intel.aws.eu.pangea.cloud/v1/vpn", json=verification_data, headers=headers)
+
+    verification_data = {
+        "ip": contact.ip_address,
+        "provider": "digitalelement"
+    }
+    headers = {
+        "Authorization": f"Bearer {api_token}",
+        "Content-Type": "application/json"
+    }
+    proxy_response = requests.post("https://ip-intel.aws.eu.pangea.cloud/v1/proxy", json=verification_data, headers=headers)
+
+    verification_data = {
+        "ip": contact.ip_address
+    }
+    headers = {
+        "Authorization": f"Bearer {api_token}",
+        "Content-Type": "application/json"
+    }
+    sanctions_response = requests.post("https://embargo.aws.eu.pangea.cloud/v1/ip/check", json=verification_data, headers=headers)
+
+    verification_data = {
+        "email": contact.username,
+        "provider": "spycloud"
+    }
+    headers = {
+        "Authorization": f"Bearer {api_token}",
+        "Content-Type": "application/json"
+    }
+    breached_response = requests.post("https://user-intel.aws.eu.pangea.cloud/v1/user/breached", json=verification_data, headers=headers)
+
+    print("Sanctions: ", sanctions_response)
+    print("VPN: ", vpn_response)
+    print("Proxy: ", proxy_response)
+    print("Breached: ", breached_response)
+    # Handle the response as needed
+    if response.status_code == 200:
+        verification_result = response.json()
+        verdict = verification_result.get("result", {}).get("data", {}).get("verdict")
+        if verdict == "benign":
+            contact.status = "Trusted"
+        else:
+            contact.status = "Untrusted"
+
+        # Log the contact deletion event
+        log_data = {
+            "config_id": f"{log_config_id}",
+            'event': {
+                'message': 'Verifying contact'
+            }
+        }
+
+        headers = {
+            'Authorization': f"Bearer {api_token}",
+            'Content-Type': 'application/json'
+        }
+
+        response = requests.post('https://audit.aws.eu.pangea.cloud/v1/log', json=log_data, headers=headers)
+        res = response.json()
+
+        # Save the log data to the database
+        log = Log(
+            message=log_data['event']['message'],
+            actor=current_user.id,
+            action='verify',
+            target='Contact',
+            status='success',
+            request_time=res['request_time']
+        )
+
+        db.session.add(log)
+  
+
+        db.session.commit()
+
+    return redirect(url_for("contacts"))
 
 @app.route("/what")
 def what():
