@@ -3,7 +3,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, TextAreaField, DataRequired
 from wtforms.validators import InputRequired, Length
 from dotenv import load_dotenv
 
@@ -66,6 +66,11 @@ class ContactForm(FlaskForm):
     status = StringField('Status')
     ip_address = StringField('IP Address', validators=[InputRequired()])
     submit = SubmitField('Create Contact')
+class ContactUsForm(FlaskForm):
+    name = StringField("Name", validators=[DataRequired()])
+    email = StringField("Email", validators=[DataRequired(), Email()])
+    message = TextAreaField("Message", validators=[DataRequired()])
+    submit = SubmitField("Send")
 
 @app.route("/")
 def index():
