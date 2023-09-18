@@ -169,6 +169,12 @@ def home():
     return render_template("home.html", current_user=current_user, form=form, contacts=contacts, trusted_contacts=trusted_contacts, untrusted_contacts=untrusted_contacts)
 
 @login_required
+@app.route("/compliance", methods=["GET"])
+def compliance(contact_id):
+    contacts = Contact.query.filter_by(user_id=current_user.id).all()
+    return render_template("compliance.html", current_user=current_user, contacts=contacts)
+
+@login_required
 @app.route("/compliance/<int:contact_id>", methods=["POST"])
 def compliance(contact_id):
     # Perform verification process using the ip_address field
