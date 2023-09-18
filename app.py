@@ -170,7 +170,7 @@ def home():
 
 @login_required
 @app.route("/compliance", methods=["GET"])
-def compliance(contact_id):
+def compliance_home(contact_id):
     contacts = Contact.query.filter_by(user_id=current_user.id).all()
     return render_template("compliance.html", current_user=current_user, contacts=contacts)
 
