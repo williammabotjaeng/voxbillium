@@ -18,6 +18,7 @@ load_dotenv()
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SECRET_KEY'] = 'QPEunVzlmptwr73MfPz44w=='
 api_token = os.getenv("API_TOKEN")
+log_config_id = os.getenv("CONFIG_ID")
 
 app.config["MAIL_SERVER"] = "smtp.gmail.com"
 app.config["MAIL_PORT"] = 465
@@ -185,9 +186,13 @@ def contacts():
     contacts = Contact.query.filter_by(user_id=current_user.id).all()
     return render_template("contacts.html", current_user=current_user, contacts=contacts)
 
+import requests
+
 @app.route("/create_contact", methods=["GET", "POST"])
 @login_required
 def create_contact():
+    print("Config ID", log_config_id)
+    print("API Token", api_token)
     if request.method == "POST":
         contact_type = request.form.get("contact_type")
         first_name = request.form.get("first_name")
@@ -205,32 +210,27 @@ def create_contact():
         db.session.add(new_contact)
         db.session.commit()
         
-         # Log the contact creation event
+        # Log the contact creation event
         log_data = {
+            "config_id": f"{log_config_id}",
             'event': {
-                'message': 'Contact created',
-                'actor': current_user.id,
-                'action': 'create',
-                'target': 'Contact',
-                'status': 'success'
+                'message': 'Creating some stuff'
             }
         }
         headers = {
-            'Authorization': f'Bearer {api_token}',
+            'Authorization': f"Bearer {api_token}",
             'Content-Type': 'application/json'
         }
-        print("Before the Call")
-        response = requests.post('https://audit.aws.us.pangea.cloud/v1/log', json=log_data, headers=headers)
-
-        print(response)
-
+        
+        response = requests.post('https://audit.aws.eu.pangea.cloud/v1/log', json=log_data, headers=headers)
+        print("Response", response.json())
         # Save the log data to the database
         log = Log(
             message=log_data['event']['message'],
-            actor=log_data['event']['actor'],
-            action=log_data['event']['action'],
-            target=log_data['event']['target'],
-            status=log_data['event']['status']
+            actor=current_user.id,
+            action='create',
+            target='Contact',
+            status='success'
         )
         db.session.add(log)
         db.session.commit()
@@ -301,6 +301,16 @@ def verify_contact(contact_id):
         db.session.commit()
 
     return redirect(url_for("contacts"))
+
+@app.route("/logs")
+@login_required
+def logs():
+    user_id = current_user.id
+
+    # Retrieve logs from the database with the current_user's id as the actor field
+    logs = Log.query.filter_by(actor=user_id).all()
+
+    return render_template("logs.html", logs=logs)
 
 @app.route("/get_contact", methods=["GET", "POST"])
 @login_required
