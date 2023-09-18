@@ -45,3 +45,7 @@
     margin-left: 140px;
     margin-top: 10px;
 }
+
+.tall-textarea {
+    height: 160px;
+  }
