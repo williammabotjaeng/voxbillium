@@ -1,56 +1,35 @@
 {% extends 'app_layout.html' %}
 
 {% block content %}
-    <div style="margin: 20px">
-        <h1 class="m-5">Edit Contact</h1>
-        <form method="post" action="/contacts/edit/{{ contact.id }}">
+    <div style="margin: 20px; display: grid; grid-template-columns: 1fr 1fr; grid-gap: 20px;">
+        <div>
+            <h1 class="m-5">Edit Contact</h1>
+            <form method="post" action="/contacts/edit/{{ contact.id }}">
+                {% for field in ['first_name', 'email', 'address', 'ip_address'] %}
+                <div class="field">
+                    <label class="label">{{ field|capitalize }}</label>
+                    <div class="control">
+                        <input class="input" type="text" name="{{ field }}" value="{{ contact[field] }}" {% if field == 'first_name' or field == 'email' or field == 'ip_address' %}required{% endif %}>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <div class="field">
+                    <div class="control">
+                        <button class="button is-primary" type="submit">Save Changes</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div style="margin-top: 66px;">
+            {% for field in ['last_name', 'phone_number', 'status'] %}
             <div class="field">
-                <label class="label">First Name</label>
+                <label class="label">{{ field|capitalize }}</label>
                 <div class="control">
-                    <input class="input" type="text" name="first_name" value="{{ contact.first_name }}" required>
+                    <input class="input" type="text" name="{{ field }}" value="{{ contact[field] }}">
                 </div>
             </div>
-            <div class="field">
-                <label class="label">Last Name</label>
-                <div class="control">
-                    <input class="input" type="text" name="last_name" value="{{ contact.last_name }}">
-                </div>
-            </div>
-            <div class="field">
-                <label class="label">Email</label>
-                <div class="control">
-                    <input class="input" type="email" name="email" value="{{ contact.email }}" required>
-                </div>
-            </div>
-            <div class="field">
-                <label class="label">Phone Number</label>
-                <div class="control">
-                    <input class="input" type="text" name="phone_number" value="{{ contact.phone_number }}">
-                </div>
-            </div>
-            <div class="field">
-                <label class="label">Address</label>
-                <div class="control">
-                    <textarea class="textarea" name="address">{{ contact.address }}</textarea>
-                </div>
-            </div>
-            <div class="field">
-                <label class="label">Status</label>
-                <div class="control">
-                    <input class="input" type="text" name="status" value="{{ contact.status }}">
-                </div>
-            </div>
-            <div class="field">
-                <label class="label">IP Address</label>
-                <div class="control">
-                    <input class="input" type="text" name="ip_address" value="{{ contact.ip_address }}" required>
-                </div>
-            </div>
-            <div class="field">
-                <div class="control">
-                    <button class="button is-primary" type="submit">Save Changes</button>
-                </div>
-            </div>
-        </form>
+            {% endfor %}
+        </div>
     </div>
 {% endblock %}
