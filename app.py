@@ -252,18 +252,26 @@ def delete_contact(contact_id):
 @login_required
 def edit_contact(contact_id):
     contact = Contact.query.filter_by(user_id=current_user.id, id=contact_id).first()
+    print("Contact: ", contact)
     if not contact:
         return redirect(url_for("contacts"))
 
     if request.method == "POST":
         # Update the contact object with the new data from the form
-        contact.name = request.form.get("name")
+        print(request.form)
+        contact.first_name = request.form.get("first_name")
+        contact.last_name = request.form.get("last_name")
         contact.email = request.form.get("email")
-        contact.phone = request.form.get("phone")
+        contact.phone_number = request.form.get("phone_number")
+        contact.address = request.form.get("address")
+        contact.status = request.form.get("status")
+        contact.ip_address = request.form.get("ip_address")
         db.session.commit()
+        print("Done, Saved Data!")
         return redirect(url_for("contacts"))
     else:
         return render_template("edit_contact.html", current_user=current_user, contact=contact)
+
 
 @app.route("/verify/<int:contact_id>", methods=["POST"])
 @login_required
@@ -293,28 +301,6 @@ def verify_contact(contact_id):
         db.session.commit()
 
     return redirect(url_for("contacts"))
-
-
-@app.route("/update_contact/<int:contact_id>", methods=["GET", "POST"])
-@login_required
-def update_contact(contact_id):
-    contact = Contact.query.get_or_404(contact_id)
-
-    if request.method == "POST":
-        contact.contact_type = request.form.get("contact_type")
-        contact.first_name = request.form.get("first_name")
-        contact.last_name = request.form.get("last_name")
-        contact.email = request.form.get("email")
-        contact.phone_number = request.form.get("phone_number")
-        contact.address = request.form.get("address")
-        contact.status = request.form.get("status")
-        contact.ip_address = request.form.get("ip_address")
-
-        db.session.commit()
-
-        return redirect(url_for("contacts"))
-
-    return render_template("update_contact.html", current_user=current_user, contact=contact)
 
 @app.route("/get_contact", methods=["GET", "POST"])
 @login_required
