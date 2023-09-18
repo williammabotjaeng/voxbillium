@@ -1,0 +1,35 @@
+{% extends 'app_layout.html' %}
+
+{% block content %}
+    {% if logs %}
+    <div style="margin: 20px">
+        <h1 class="m-5">Logs</h1>
+        <table class="table is-hoverable table-color has-background-info-light is-striped is-narrow is-hoverable is-fullwidth">
+            <thead>
+                <tr class="teal">
+                    <th><strong class="has-text-white">Message</strong></th>
+                    <th><strong class="has-text-white">Actor</strong></th>
+                    <th><strong class="has-text-white">Action</strong></th>
+                    <th><strong class="has-text-white">Target</strong></th>
+                    <th><strong class="has-text-white">Status</strong></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                    <tr>
+                        <td>{{ log.message }}</td>
+                        <td>{{ log.actor }}</td>
+                        <td>{{ log.action }}</td>
+                        <td>{{ log.target }}</td>
+                        <td>{{ log.status }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
+            <h1 style="margin-top: 80px;">No Logs yet</h1>
+        </div>
+    {% endif %}
+{% endblock %}
