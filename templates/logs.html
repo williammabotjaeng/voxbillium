@@ -29,11 +29,11 @@
 
         <!-- Pagination buttons -->
         <div class="pagination">
-            <button class="pagination-button" id="prevButton">Prev</button>
+            <button class="pagination-button button" id="prevButton">Prev</button>
             {% for page in range(1, (logs|length // 10) + 1) %}
-                <button class="pagination-button" data-page="{{ page }}">{{ page }}</button>
+                <button class="pagination-button button" data-page="{{ page }}">{{ page }}</button>
             {% endfor %}
-            <button class="pagination-button" id="nextButton">Next</button>
+            <button class="pagination-button button" id="nextButton">Next</button>
         </div>
     </div>
     {% else %}
