@@ -49,4 +49,14 @@
 .tall-textarea {
     height: 160px;
     padding: 4px;
-  }
+}
+
+.centered-cells {
+    justify-content: center;
+    align-items: center;
+}
+
+.action-btn {
+    border: none;
+    background-color: none;
+}
