@@ -3,7 +3,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_wtf import FlaskForm
-from flask_mail import Message
+from flask_mail import Message, Mail
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, TextAreaField
 from wtforms.validators import InputRequired, Length, DataRequired, Email
 from dotenv import load_dotenv
@@ -18,6 +18,14 @@ load_dotenv()
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SECRET_KEY'] = 'QPEunVzlmptwr73MfPz44w=='
 api_token = os.getenv("API_TOKEN")
+
+app.config["MAIL_SERVER"] = "smtp.gmail.com"
+app.config["MAIL_PORT"] = 465
+app.config["MAIL_USE_SSL"] = True
+app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")  # Replace with your email address
+app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD") # Replace with your email password
+
+mail = Mail(app)
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
@@ -70,7 +78,7 @@ class ContactForm(FlaskForm):
 class ContactUsForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
     email = StringField("Email", validators=[DataRequired()])
-    message = TextAreaField("Message", validators=[DataRequired()])
+    message = TextAreaField("Message", render_kw={ "rows": 5 }, validators=[DataRequired()])
     submit = SubmitField("Send")
 
 @app.route("/")
@@ -152,13 +160,14 @@ def contact():
         msg = Message(
             subject="New Message from Contact Form",
             sender=app.config["MAIL_USERNAME"],
-            recipients=["your-email@gmail.com"],  # Replace with your email address
+            recipients=["topolockapp@gmail.com"],
             body=f"Name: {name}\nEmail: {email}\nMessage: {message}"
         )
+
         mail.send(msg)
 
         flash("Your message has been sent successfully!", "success")
-        return redirect(url_for("getintouch"))
+        return redirect(url_for("home"))
 
     return render_template("getintouch.html", form=form, current_user=current_user)
 

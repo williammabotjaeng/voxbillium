@@ -36,42 +36,26 @@
     <div class="col login-area">
         <h2 style="color: #48c78e; font-weight: bold;">Get in Touch</h2>
         <br>
-        <form>
-        <div class="field">
-            <p class="control has-icons-left has-icons-right">
-            <input class="input" type="email" placeholder="Email">
-            <span class="icon is-small is-left">
-                <i class="fas fa-envelope"></i>
-            </span>
-            <span class="icon is-small is-right">
-                <i class="fas fa-check"></i>
-            </span>
-            </p>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="alert alert-{{ messages[0][1] }}">
+            {{ messages[0][0] }}
+          </div>
+        {% endif %}
+      {% endwith %}
+      <form method="POST" action="{{ url_for('contact') }}">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+          {{ form.name.label }} {{ form.name(class="form-control") }}
         </div>
-        <div class="field">
-            <p class="control has-icons-left">
-            <input class="input" type="text" placeholder="Your Name">
-            <span class="icon is-small is-left">
-                <i class="fas fa-person"></i>
-            </span>
-            </p>
+        <div class="form-group">
+          {{ form.email.label }} {{ form.email(class="form-control") }}
         </div>
-        <div class="field">
-            <p class="control has-icons-left">
-            <textarea style="height: 180%;" class="textarea" rows="5" placeholder="Enter Your Message Here"></textarea>
-            <span class="icon is-small is-left">
-                <i class="fas fa-pencil"></i>
-            </span>
-            </p>
+        <div class="form-group">
+          {{ form.message.label }} {{ form.message(class="form-control") }}
         </div>
-        <div class="field">
-            <p class="control">
-            <button class="button is-success">
-                Send Message
-            </button>
-            </p>
-        </div>
-        </form>
+        <button type="submit" class="btn btn-primary">Send</button>
+      </form>
       </div>
   </div>
 {% endblock %}
