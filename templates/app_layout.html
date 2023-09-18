@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma-rtl.min.css">
+    <link href="https://unpkg.com/intro.js/minified/introjs.min.css" rel="stylesheet">
     <title>TopoLock | Secure Location</title>
 </head>
 <body>
@@ -31,11 +32,10 @@
             <a href="/" class="navbar-item">
               Home
             </a>
-      
+            <a id="startTourButton" class="navbar-item teal has-text-white">Guided Tour</a>
             <a href="/docs" class="navbar-item">
               Documentation
             </a>
-      
             <div class="navbar-item has-dropdown is-hoverable">
               <a class="navbar-link">
                 More
@@ -93,5 +93,7 @@
 </footer>  
    <!-- Compiled and minified JavaScript -->
    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+   <script src="{{ url_for('static', filename='js/guided_tour.js') }}"></script>
+   <script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
 </body>
 </html>
