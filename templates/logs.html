@@ -23,7 +23,7 @@
                         <td>{{ log.action }}</td>
                         <td>{{ log.target }}</td>
                         <td>{{ log.status }}</td>
-                        <td>{{ log.request_time }}</td>
+                        <td>{{  moment.date(log.request_time).format("YYYY-M-D h:m A")}}</td>
                     </tr>
                 {% endfor %}
             </tbody>
