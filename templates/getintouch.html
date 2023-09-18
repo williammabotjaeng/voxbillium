@@ -1,0 +1,54 @@
+{% extends 'layout.html' %}
+
+{% block header %}
+  <h1>{% block title %}{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<div class="row landing-page-content" style="margin-top: 40px;">
+    <div class="col quote-links">
+      <div class="card" style="height: 40vh;">
+          <div class="card-content">
+            <p class="title">
+              “For unfailingly secure defense, defend where there is no attack..”
+            </p>
+            <br>
+            <p class="subtitle">
+               Sun Tzu
+            </p>
+          </div>
+          {% if not current_user.is_authenticated %}
+          <footer class="card-footer">
+            <p class="card-footer-item">
+              <span>
+                Already Registered? <a href="/login">Login</a>
+              </span>
+            </p>
+            <p class="card-footer-item">
+              <span>
+                New User? <a href="/register">Sign Up</a>
+              </span>
+            </p>
+          </footer>
+          {% endif %}
+        </div>
+    </div>
+    <div class="col login-area">
+        <h2 style="color: #48c78e; font-weight: bold;">Get in Touch</h2>
+        <br>
+      <form method="POST" action="{{ url_for('contact') }}">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+          {{ form.name.label }} {{ form.name(class="form-control") }}
+        </div>
+        <div class="form-group">
+          {{ form.email.label }} {{ form.email(class="form-control") }}
+        </div>
+        <div class="form-group">
+          {{ form.message.label }} {{ form.message(class="form-control") }}
+        </div>
+        <button type="submit" class="btn btn-primary">Send</button>
+      </form>
+      </div>
+  </div>
+{% endblock %}

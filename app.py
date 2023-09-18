@@ -3,8 +3,9 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField
-from wtforms.validators import InputRequired, Length
+from flask_mail import Message, Mail
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, TextAreaField
+from wtforms.validators import InputRequired, Length, DataRequired, Email
 from dotenv import load_dotenv
 
 import requests
@@ -17,6 +18,14 @@ load_dotenv()
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SECRET_KEY'] = 'QPEunVzlmptwr73MfPz44w=='
 api_token = os.getenv("API_TOKEN")
+
+app.config["MAIL_SERVER"] = "smtp.gmail.com"
+app.config["MAIL_PORT"] = 465
+app.config["MAIL_USE_SSL"] = True
+app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")  # Replace with your email address
+app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD") # Replace with your email password
+
+mail = Mail(app)
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
@@ -66,6 +75,11 @@ class ContactForm(FlaskForm):
     status = StringField('Status')
     ip_address = StringField('IP Address', validators=[InputRequired()])
     submit = SubmitField('Create Contact')
+class ContactUsForm(FlaskForm):
+    name = StringField("Name", validators=[DataRequired()])
+    email = StringField("Email", validators=[DataRequired()])
+    message = TextAreaField("Message", render_kw={ "rows": 5 }, validators=[DataRequired()])
+    submit = SubmitField("Send")
 
 @app.route("/")
 def index():
@@ -134,6 +148,28 @@ def home():
 @app.route("/what")
 def what():
     return render_template("what.html")
+
+@app.route("/getintouch", methods=["GET", "POST"])
+def contact():
+    form = ContactUsForm()
+    if form.validate_on_submit():
+        name = form.name.data
+        email = form.email.data
+        message = form.message.data
+
+        msg = Message(
+            subject="New Message from Contact Form",
+            sender=app.config["MAIL_USERNAME"],
+            recipients=["topolockapp@gmail.com"],
+            body=f"Name: {name}\nEmail: {email}\nMessage: {message}"
+        )
+
+        mail.send(msg)
+
+        flash("Your message has been sent successfully!", "success")
+        return redirect(url_for("home"))
+
+    return render_template("getintouch.html", form=form, current_user=current_user)
 
 @app.route("/contacts")
 @login_required
@@ -265,10 +301,6 @@ def get_latest_contact():
 @app.route("/docs")
 def docs():
     return render_template("docs.html")
-
-@app.route("/contact")
-def contact():
-    return render_template("contact.html", current_user=current_user)
 
 @app.route("/logout")
 @login_required
