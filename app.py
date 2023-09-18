@@ -3,8 +3,8 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, TextAreaField, DataRequired
-from wtforms.validators import InputRequired, Length
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, TextAreaField
+from wtforms.validators import InputRequired, Length, DataRequired
 from dotenv import load_dotenv
 
 import requests
@@ -68,7 +68,7 @@ class ContactForm(FlaskForm):
     submit = SubmitField('Create Contact')
 class ContactUsForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
-    email = StringField("Email", validators=[DataRequired(), Email()])
+    email = StringField("Email", validators=[DataRequired()])
     message = TextAreaField("Message", validators=[DataRequired()])
     submit = SubmitField("Send")
 
@@ -157,9 +157,9 @@ def contact():
         mail.send(msg)
 
         flash("Your message has been sent successfully!", "success")
-        return redirect(url_for("contact"))
+        return redirect(url_for("getintouch"))
 
-    return render_template("getintouch.html", form=form)
+    return render_template("getintouch.html", form=form, current_user=current_user)
 
 @app.route("/contacts")
 @login_required
@@ -291,10 +291,6 @@ def get_latest_contact():
 @app.route("/docs")
 def docs():
     return render_template("docs.html")
-
-@app.route("/contact")
-def contact():
-    return render_template("contact.html", current_user=current_user)
 
 @app.route("/logout")
 @login_required
