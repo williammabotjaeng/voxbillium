@@ -172,7 +172,7 @@ def home():
 @app.route("/compliance")
 def home():
     contacts = Contact.query.filter_by(user_id=current_user.id).all()
-    return render_template("home.html", current_user=current_user, contacts=contacts)
+    return render_template("compliance.html", current_user=current_user, contacts=contacts)
 
 @app.route("/what")
 def what():
