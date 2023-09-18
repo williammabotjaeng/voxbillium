@@ -143,7 +143,16 @@ def register():
             db.session.add(new_user)
             db.session.commit()
           
-            flash('Registration successful!')
+            # Send email to the new user
+            msg = Message(
+                subject="Welcome to TopoLock!",
+                sender=app.config["MAIL_USERNAME"],
+                recipients=[username],
+                body=f"Hi {username},\n\nThank you for registering on our website. We are excited to have you as a member!\n\nBest regards,\nTopoLock Team"
+            )
+            mail.send(msg)
+
+            flash('Registration successful! An email has been sent to your email address.')
             user = User.query.filter_by(username=username).first()
             login_user(user)
             print("User Created")
