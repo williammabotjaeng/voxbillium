@@ -332,15 +332,6 @@ def get_contact():
     
     return render_template("get_contact.html", current_user=current_user)
 
-@app.route("/delete_contact/<int:contact_id>", methods=["POST"])
-@login_required
-def delete_contact(contact_id):
-    contact = Contact.query.get_or_404(contact_id)
-    db.session.delete(contact)
-    db.session.commit()
-
-    return redirect(url_for("contacts"))
-
 @app.route("/trusted_contacts", methods=["GET"])
 @login_required
 def get_trusted_contacts():
