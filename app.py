@@ -50,6 +50,14 @@ class Contact(db.Model):
 
     user = db.relationship('User', backref=db.backref('contacts', lazy=True)) 
 
+class Log(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    message = db.Column(db.String(100))
+    actor = db.Column(db.String(100))
+    action = db.Column(db.String(100))
+    target = db.Column(db.String(100))
+    status = db.Column(db.String(100))
+
 with app.app_context():
     db.create_all()
 
@@ -196,10 +204,66 @@ def create_contact():
 
         db.session.add(new_contact)
         db.session.commit()
+        
+         # Log the contact creation event
+        log_data = {
+            'event': {
+                'message': 'Contact created',
+                'actor': current_user.id,
+                'action': 'create',
+                'target': 'Contact',
+                'status': 'success'
+            }
+        }
+        headers = {
+            'Authorization': f'Bearer {api_token}',
+            'Content-Type': 'application/json'
+        }
+        print("Before the Call")
+        response = requests.post('https://audit.aws.us.pangea.cloud/v1/log', json=log_data, headers=headers)
+
+        print(response)
+
+        # Save the log data to the database
+        log = Log(
+            message=log_data['event']['message'],
+            actor=log_data['event']['actor'],
+            action=log_data['event']['action'],
+            target=log_data['event']['target'],
+            status=log_data['event']['status']
+        )
+        db.session.add(log)
+        db.session.commit()
 
         return redirect(url_for("contacts"))
     
     return render_template("create_contact.html", current_user=current_user)
+
+@app.route("/contacts/delete/<int:contact_id>", methods=["POST"])
+@login_required
+def delete_contact(contact_id):
+    contact = Contact.query.filter_by(user_id=current_user.id, id=contact_id).first()
+    if contact:
+        db.session.delete(contact)
+        db.session.commit()
+    return redirect(url_for("contacts"))
+
+@app.route("/contacts/edit/<int:contact_id>", methods=["GET", "POST"])
+@login_required
+def edit_contact(contact_id):
+    contact = Contact.query.filter_by(user_id=current_user.id, id=contact_id).first()
+    if not contact:
+        return redirect(url_for("contacts"))
+
+    if request.method == "POST":
+        # Update the contact object with the new data from the form
+        contact.name = request.form.get("name")
+        contact.email = request.form.get("email")
+        contact.phone = request.form.get("phone")
+        db.session.commit()
+        return redirect(url_for("contacts"))
+    else:
+        return render_template("edit_contact.html", current_user=current_user, contact=contact)
 
 @app.route("/verify/<int:contact_id>", methods=["POST"])
 @login_required
