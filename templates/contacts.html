@@ -33,7 +33,7 @@
                         <td>{{ contact.phone }}</td>
                         <td>{{ contact.status if contact.status else "Pending" }}</td>
                         <td><form method="post" action="/contacts/delete/{{ contact.id }}"><button type="submit">Delete</button></form></td>
-                        <td><form method="post" action="/contacts/edit/{{ contact.id }}"><button type="submit">Edit</button></form></td>
+                        <td><form action="/contacts/edit/{{ contact.id }}"><button type="submit">Edit</button></form></td>
                         <td><form method="post" action="/verify/{{ contact.id }}" class="button is-info" style="margin-right: 10px"><button type="submit">Verify</button></form></td> <!-- Replaced checkbox with button -->
                     </tr>
                 {% endfor %}
