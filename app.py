@@ -219,7 +219,7 @@ def create_contact():
         log_data = {
             "config_id": f"{log_config_id}",
             'event': {
-                'message': 'Creating some stuff'
+                'message': 'Creating Contact'
             }
         }
         headers = {
@@ -312,7 +312,7 @@ def edit_contact(contact_id):
         log_data = {
             "config_id": f"{log_config_id}",
             'event': {
-                'message': 'Updating some stuff'
+                'message': 'Updating Contact'
             }
         }
         headers = {
@@ -365,6 +365,35 @@ def verify_contact(contact_id):
             contact.status = "Trusted"
         else:
             contact.status = "Untrusted"
+
+        # Log the contact deletion event
+        log_data = {
+            "config_id": f"{log_config_id}",
+            'event': {
+                'message': 'Verifying contact'
+            }
+        }
+
+        headers = {
+            'Authorization': f"Bearer {api_token}",
+            'Content-Type': 'application/json'
+        }
+
+        response = requests.post('https://audit.aws.eu.pangea.cloud/v1/log', json=log_data, headers=headers)
+        res = response.json()
+
+        # Save the log data to the database
+        log = Log(
+            message=log_data['event']['message'],
+            actor=current_user.id,
+            action='verify',
+            target='Contact',
+            status='success',
+            request_time=res['request_time']
+        )
+
+        db.session.add(log)
+  
 
         db.session.commit()
 
