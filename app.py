@@ -58,6 +58,7 @@ class Log(db.Model):
     action = db.Column(db.String(100))
     target = db.Column(db.String(100))
     status = db.Column(db.String(100))
+    log_time = db.Column(db.String(100))
 
 with app.app_context():
     db.create_all()
@@ -223,14 +224,15 @@ def create_contact():
         }
         
         response = requests.post('https://audit.aws.eu.pangea.cloud/v1/log', json=log_data, headers=headers)
-        print("Response", response.json())
+        res = response.json()
         # Save the log data to the database
         log = Log(
             message=log_data['event']['message'],
             actor=current_user.id,
             action='create',
             target='Contact',
-            status='success'
+            status='success',
+            log_time=res['request_time']
         )
         db.session.add(log)
         db.session.commit()
@@ -242,10 +244,44 @@ def create_contact():
 @app.route("/contacts/delete/<int:contact_id>", methods=["POST"])
 @login_required
 def delete_contact(contact_id):
+    app.logger.info('Deleting contact with ID: %s', contact_id)
+
     contact = Contact.query.filter_by(user_id=current_user.id, id=contact_id).first()
     if contact:
+        app.logger.info('Contact found. Deleting contact: %s', contact)
         db.session.delete(contact)
         db.session.commit()
+    else:
+        app.logger.warning('Contact not found with ID: %s', contact_id)
+
+    # Log the contact deletion event
+    log_data = {
+        "config_id": f"{log_config_id}",
+        'event': {
+            'message': 'Deleting contact'
+        }
+    }
+    headers = {
+        'Authorization': f"Bearer {api_token}",
+        'Content-Type': 'application/json'
+    }
+
+    response = requests.post('https://audit.aws.eu.pangea.cloud/v1/log', json=log_data, headers=headers)
+    res = response.json()
+
+    # Save the log data to the database
+    log = Log(
+        message=log_data['event']['message'],
+        actor=current_user.id,
+        action='delete',
+        target='Contact',
+        status='success',
+        log_time=res['request_time']
+    )
+    db.session.add(log)
+    db.session.commit()
+
+    app.logger.info('Contact deletion completed')
     return redirect(url_for("contacts"))
 
 @app.route("/contacts/edit/<int:contact_id>", methods=["GET", "POST"])
@@ -267,6 +303,34 @@ def edit_contact(contact_id):
         contact.status = request.form.get("status")
         contact.ip_address = request.form.get("ip_address")
         db.session.commit()
+
+        # Log the contact update event
+        log_data = {
+            "config_id": f"{log_config_id}",
+            'event': {
+                'message': 'Updating some stuff'
+            }
+        }
+        headers = {
+            'Authorization': f"Bearer {api_token}",
+            'Content-Type': 'application/json'
+        }
+
+        response = requests.post('https://audit.aws.eu.pangea.cloud/v1/log', json=log_data, headers=headers)
+        res = response.json()
+
+        # Save the log data to the database
+        log = Log(
+            message=log_data['event']['message'],
+            actor=current_user.id,
+            action='update',
+            target='Contact',
+            status='success',
+            log_time=res['request_time']
+        )
+        db.session.add(log)
+        db.session.commit()
+
         print("Done, Saved Data!")
         return redirect(url_for("contacts"))
     else:
