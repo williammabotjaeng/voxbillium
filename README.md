@@ -1,5 +1,7 @@
 # TopoLock
 
+Open Source Project under MIT License https://opensource.org/license/mit/
+
 <h2>How to Run this App on Localhost</h2>
 <p>To run an existing Flask app on localhost with specific environment variables, you can follow these steps:</p>
 <h3>Set up a Virtual Environment (Optional)</h3>
