@@ -27,4 +27,4 @@ export MAIL_PASSWORD=your_mail_password
 </code></pre>
 <p>The Flask app will start running on port 5000 by default.</p>
 <h3>Access the App</h3>
-<p>Once the server is running, you can access your Flask app by opening a web browser and navigating to <a href="http://localhost:5000">http://localhost:5000</a>. You should be able to interact with your Flask app based on its functionality.</p>
+<p>Once the server is running, you can access your Flask app by opening a web browser and navigating to <a href="http://localhost:5000">http://localhost:5000</a>. You should be able to interact with the app based on its functionality.</p>
