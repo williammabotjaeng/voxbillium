@@ -16,15 +16,15 @@
 - set FLASK_APP=app.py     # For Windows (Command Prompt)
 - Set the Environment Variables: Set the required environment variables for your Flask app. Assuming you have the following environment variables to set: API_TOKEN, CONFIG_ID, LOG_API_TOKEN, MAIL_USERNAME, and MAIL_PASSWORD. In your terminal or command prompt, run the following commands to set the environment variables:
 
-export API_TOKEN=your_api_token
-export CONFIG_ID=your_config_id
-export LOG_API_TOKEN=your_log_api_token
-export MAIL_USERNAME=your_mail_username
-export MAIL_PASSWORD=your_mail_password
+- export API_TOKEN=your_api_token
+- export CONFIG_ID=your_config_id
+- export LOG_API_TOKEN=your_log_api_token
+- export MAIL_USERNAME=your_mail_username
+- export MAIL_PASSWORD=your_mail_password
 
 Run the App: Start the Flask app by running the following command in your terminal or command prompt:
 
-flask run
+<code>flask run</code>
 The Flask app will start running on port 5000 by default.
 
 Access the App: Once the server is running, you can access your Flask app by opening a web browser and navigating to http://localhost:5000. You should be able to interact with your Flask app based on its functionality.
