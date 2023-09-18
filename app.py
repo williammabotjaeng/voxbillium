@@ -3,8 +3,9 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_wtf import FlaskForm
+from flask_mail import Message
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, TextAreaField
-from wtforms.validators import InputRequired, Length, DataRequired
+from wtforms.validators import InputRequired, Length, DataRequired, Email
 from dotenv import load_dotenv
 
 import requests
@@ -142,7 +143,7 @@ def what():
 
 @app.route("/getintouch", methods=["GET", "POST"])
 def contact():
-    form = ContactForm()
+    form = ContactUsForm()
     if form.validate_on_submit():
         name = form.name.data
         email = form.email.data
