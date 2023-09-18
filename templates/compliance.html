@@ -18,11 +18,11 @@
                 <tr class="teal">
                     <th><strong class="has-text-white">Name</strong></th>
                     <th><strong class="has-text-white">Email</strong></th>
-                    <th><strong class="has-text-white">Phone</strong></th>
-                    <th><strong class="has-text-white">Status</strong></th>
-                    <th><strong class="has-text-white">Delete</strong></th>
-                    <th><strong class="has-text-white">Edit</strong></th>
-                    <th><strong class="has-text-white">Verify</strong></th> <!-- Replaced Select with Verify column -->
+                    <th><strong class="has-text-white">Country</strong></th>
+                    <th><strong class="has-text-white">VPN</strong></th>
+                    <th><strong class="has-text-white">Compromised</strong></th>
+                    <th><strong class="has-text-white">Proxy</strong></th>
+                    <th><strong class="has-text-white">Check</strong></th> 
                 </tr>
             </thead>
             <tbody>
@@ -32,13 +32,9 @@
                         <td>{{ contact.email }}</td>
                         <td>{{ contact.phone }}</td>
                         <td>{{ contact.status if contact.status else "Pending" }}</td>
-                        <td class="centered-cells"><form method="post" action="/contacts/delete/{{ contact.id }}"><button class="action-btn" type="submit"><span class="icon">
-                            <i class="fas fa-trash-alt"></i>
-                          </span></button></form></td>
-                        <td class="centered-cells"><form action="/contacts/edit/{{ contact.id }}"><button class="action-btn" type="submit"><span class="icon">
-                            <i class="fas fa-pencil-alt"></i>
-                          </span></button></form></td>
-                        <td class="centered-cells"><form method="post" action="/verify/{{ contact.id }}" style="margin-right: 10px"><button class="button is-info is-small" type="submit">Verify</button></form></td> <!-- Replaced checkbox with button -->
+                        <td class="centered-cells"><form method="post" action="/contacts/delete/{{ contact.id }}"><button class="action-btn" type="submit"></button></form></td>
+                        <td class="centered-cells"><form action="/contacts/edit/{{ contact.id }}"><button class="action-btn" type="submit"></button></form></td>
+                        <td class="centered-cells"><form method="post" action="/verify/{{ contact.id }}" style="margin-right: 10px"><button class="button is-info is-small" type="submit">Check</button></form></td> <!-- Replaced checkbox with button -->
                     </tr>
                 {% endfor %}
             </tbody>
