@@ -18,7 +18,7 @@
                 <tr class="teal">
                     <th><strong class="has-text-white">Name</strong></th>
                     <th><strong class="has-text-white">Email</strong></th>
-                    <th><strong class="has-text-white">Country</strong></th>
+                    <th><strong class="has-text-white">Phone</strong></th>
                     <th><strong class="has-text-white">VPN</strong></th>
                     <th><strong class="has-text-white">Compromised</strong></th>
                     <th><strong class="has-text-white">Proxy</strong></th>
@@ -30,11 +30,11 @@
                     <tr>
                         <td>{{ contact.first_name.capitalize() }} {{ contact.last_name.capitalize() if contact.last_name else "" }}</td>
                         <td>{{ contact.email }}</td>
-                        <td>{{ contact.phone }}</td>
-                        <td>{{ contact.status if contact.status else "Pending" }}</td>
-                        <td class="centered-cells"><form method="post" action="/contacts/delete/{{ contact.id }}"><button class="action-btn" type="submit"></button></form></td>
-                        <td class="centered-cells"><form action="/contacts/edit/{{ contact.id }}"><button class="action-btn" type="submit"></button></form></td>
-                        <td class="centered-cells"><form method="post" action="/verify/{{ contact.id }}" style="margin-right: 10px"><button class="button is-info is-small" type="submit">Check</button></form></td> <!-- Replaced checkbox with button -->
+                        <td>{{ contact.sanction_status if contact.sanction_status else "Pending" }}</td>
+                        <td>{{ contact.vpn_status if contact.vpn_status else "Pending" }}</td>
+                        <td>{{ contact.breached_status if contact.breached_status else "Pending" }}</td>
+                        <td>{{ contact.proxy_status if contact.proxy_status else "Pending" }}</td>
+                        <td class="centered-cells"><form method="post" action="/check/{{ contact.id }}" style="margin-right: 10px"><button class="button is-info is-small" type="submit">Check</button></form></td> <!-- Replaced checkbox with button -->
                     </tr>
                 {% endfor %}
             </tbody>
