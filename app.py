@@ -168,6 +168,12 @@ def home():
     untrusted_contacts = Contact.query.filter_by(user_id=current_user.id, status="Untrusted").all()
     return render_template("home.html", current_user=current_user, form=form, contacts=contacts, trusted_contacts=trusted_contacts, untrusted_contacts=untrusted_contacts)
 
+@login_required
+@app.route("/compliance")
+def compliance():
+    contacts = Contact.query.filter_by(user_id=current_user.id).all()
+    return render_template("compliance.html", current_user=current_user, contacts=contacts)
+
 @app.route("/what")
 def what():
     return render_template("what.html")
