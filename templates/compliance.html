@@ -32,9 +32,7 @@
                         <td>{{ contact.email }}</td>
                         <td>{{ contact.phone }}</td>
                         <td>{{ contact.status if contact.status else "Pending" }}</td>
-                        <td class="centered-cells"><form method="post" action="/contacts/delete/{{ contact.id }}"><button class="action-btn" type="submit"><span class="icon">
-                            <i class="fas fa-trash-alt"></i>
-                          </span></button></form></td>
+                        <td class="centered-cells"><form method="post" action="/contacts/delete/{{ contact.id }}"><button class="action-btn" type="submit"></button></form></td>
                         <td class="centered-cells"><form action="/contacts/edit/{{ contact.id }}"><button class="action-btn" type="submit"></button></form></td>
                         <td class="centered-cells"><form method="post" action="/verify/{{ contact.id }}" style="margin-right: 10px"><button class="button is-info is-small" type="submit">Check</button></form></td> <!-- Replaced checkbox with button -->
                     </tr>
