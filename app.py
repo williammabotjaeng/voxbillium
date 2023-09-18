@@ -225,10 +225,10 @@ def check(contact_id):
     
     # Handle the response as needed
     if sanctions_response.status_code == 200 and vpn_response.status_code == 200 and proxy_response.status_code == 200 and breached_response.status_code == 200:
-        contact.sanction_status =  sanctions_response.json().result.count > 0 if "Yes" else "No"
-        contact.vpn_status = vpn_response.json().result.data.is_vpn if "Yes" else "No"
-        contact.proxy_status = proxy_response.json().result.data.is_proxy if "Yes" else "No"
-        contact.breached_status = breached_response.json().result.data.found_in_breach if "Yes" else "No"
+        contact.sanction_status =  sanctions_response.json()['result']['count'] > 0 if "Yes" else "No"
+        contact.vpn_status = vpn_response.json()['result']['data']['is_vpn'] if "Yes" else "No"
+        contact.proxy_status = proxy_response.json()['result']['data']['is_proxy'] if "Yes" else "No"
+        contact.breached_status = breached_response.json()['result']['data']['found_in_breach'] if "Yes" else "No"
         # Log the contact deletion event
         log_data = {
             "config_id": f"{log_config_id}",
