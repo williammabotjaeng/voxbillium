@@ -3,7 +3,7 @@
 Open Source Project under MIT License https://opensource.org/license/mit/
 
 <h2>How to Run this App on Localhost</h2>
-<p>To run an TopoLock app on localhost with specific environment variables, you can follow these steps:</p>
+<p>To run TopoLock app on localhost with specific environment variables, you can follow these steps:</p>
 <h3>Set up a Virtual Environment (Optional)</h3>
 <p>It is recommended to set up a virtual environment to isolate the dependencies of your Flask app. Open your terminal or command prompt, navigate to the directory where your Flask app is located, and run the following commands:</p>
 <pre><code>python -m venv env       # Create a virtual environment
