@@ -15,6 +15,9 @@ env\Scripts\activate    # Activate the virtual environment (for Windows)
 <pre><code>export FLASK_APP=app.py  # For Unix/Linux
 set FLASK_APP=app.py     # For Windows (Command Prompt)
 </code></pre>
+<p>To install dependencies, run the following command:</p>
+<pre><code>pip install -r requirements.txt
+</code></pre>
 <h3>Set the Environment Variables</h3>
 <p>Set the required environment variables for the app. Assuming you have the following environment variables to set: API_TOKEN, CONFIG_ID, LOG_API_TOKEN, MAIL_USERNAME, and MAIL_PASSWORD. In your terminal or command prompt, run the following commands to set the environment variables:</p>
 <pre><code>export API_TOKEN=your_api_token
