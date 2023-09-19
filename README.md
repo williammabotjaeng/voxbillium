@@ -11,7 +11,7 @@ source env/bin/activate # Activate the virtual environment (for Unix/Linux)
 env\Scripts\activate    # Activate the virtual environment (for Windows)
 </code></pre>
 <h3>Set the FLASK_APP Variable</h3>
-<p>In your terminal or command prompt, navigate to the directory where your Flask app is located and run the following command to set the FLASK_APP environment variable to app.py (assuming your Flask app is in a file named app.py):</p>
+<p>In your terminal or command prompt, navigate to the directory where your Flask app is located and run the following command to set the FLASK_APP environment variable to app.py:</p>
 <pre><code>export FLASK_APP=app.py  # For Unix/Linux
 set FLASK_APP=app.py     # For Windows (Command Prompt)
 </code></pre>
