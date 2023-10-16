@@ -305,6 +305,40 @@ def check(contact_id):
 
     return redirect(url_for("compliance"))
 
+@app.route("/create_invoice", methods=["GET", "POST"])
+@login_required
+def create_invoice():
+    if request.method == "POST":
+        customer_id = request.form.get("customer_id")
+        invoice_number = request.form.get("invoice_number")
+        invoice_date = request.form.get("invoice_date")
+        total_amount = request.form.get("total_amount")
+        status = request.form.get("status")
+        shipping_address = request.form.get("shipping_address")
+        billing_address = request.form.get("billing_address")
+        payment_method_id = request.form.get("payment_method_id")
+
+        new_invoice = Invoice(
+            customer_id=customer_id,
+            invoice_number=invoice_number,
+            invoice_date=invoice_date,
+            total_amount=total_amount,
+            status='Pending',
+            shipping_address=shipping_address,
+            billing_address=billing_address,
+            payment_method_id=payment_method_id
+        )
+
+        db.session.add(new_invoice)
+        db.session.commit()
+
+        print(Invoice.query.filter_by(customer_id=customer_id).all())
+
+        return redirect(url_for("invoices"))
+    
+    return render_template("create_invoice.html", current_user=current_user)
+
+
 @app.route("/what")
 def what():
     return render_template("what.html")
@@ -336,6 +370,15 @@ def contact():
 def customers():
     customers = Customer.query.filter_by(user_id=current_user.id).all()
     return render_template("customers.html", current_user=current_user, customers=customers)
+
+@app.route("/invoices")
+@login_required
+def invoices():
+    customers = Customer.query.filter_by(user_id=current_user.id).all()
+    invoices = []
+    for customer in customers:
+        invoices.extend(customer.invoices)
+    return render_template("invoices.html", current_user=current_user, invoices=invoices)
 
 import requests
 

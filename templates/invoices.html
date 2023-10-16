@@ -1,0 +1,51 @@
+{% extends 'app_layout.html' %}
+
+{% block content %}
+    {% if invoices %}
+    <div style="margin: 20px">
+        <div class="level" style="align-items: center;">
+            <div class="level-left">
+                <h1 class="h4 m-5"><strong>Invoices</strong></h1>
+            </div>
+            <div class="level-right">
+                <div class="buttons is-flex-direction-row">
+                    <a href="/" class="button is-primary">Create Invoice</a>
+                </div>
+            </div>
+        </div>
+        <table class="table is-hoverable table-color has-background-info-light is-striped is-narrow is-hoverable is-fullwidth">
+            <thead>
+                <tr class="teal">
+                    <th><strong class="has-text-white">Invoice Number</strong></th>
+                    <th><strong class="has-text-white">Invoice Date</strong></th>
+                    <th><strong class="has-text-white">Total Amount</strong></th>
+                    <th><strong class="has-text-white">Status</strong></th>
+                    <th><strong class="has-text-white">Delete</strong></th>
+                    <th><strong class="has-text-white">Edit</strong></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for invoice in invoices %}
+                    <tr>
+                        <td>{{ invoice.invoice_number }}</td>
+                        <td>{{ invoice.invoice_date }}</td>
+                        <td>{{ invoice.total_amount }}</td>
+                        <td>{{ invoice.status }}</td>
+                        <td class="centered-cells"><form method="post" action="/invoices/delete/{{ invoice.id }}"><button class="action-btn" type="submit"><span class="icon">
+                            <i class="fas fa-trash-alt"></i>
+                          </span></button></form></td>
+                        <td class="centered-cells"><form action="/invoices/edit/{{ invoice.id }}"><button class="action-btn" type="submit"><span class="icon">
+                            <i class="fas fa-pencil-alt"></i>
+                          </span></button></form></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
+            <h1 style="margin-top: 80px;">No Invoices yet, <a href="/">Try Creating an Invoice...</a></h1>
+            <img src="{{ url_for('static', filename='img/empty_icon.png') }}" width="10%" alt="empty_state">
+        </div>
+    {% endif %}
+{% endblock %}
