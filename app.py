@@ -45,7 +45,6 @@ class User(UserMixin, db.Model):
     address = db.Column(db.String(200))
 
     invoices = db.relationship('Invoice', backref='user', lazy=True)
-    transactions = db.relationship('Transaction', backref='user', lazy=True)
     payment_methods = db.relationship('PaymentMethod', backref='user', lazy=True)
     payments = db.relationship('Payment', backref='user', lazy=True)
 
@@ -59,7 +58,6 @@ class Customer(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     invoices = db.relationship('Invoice', backref='customer', lazy=True)
-    transactions = db.relationship('Transaction', backref='customer', lazy=True)
     payment_methods = db.relationship('PaymentMethod', backref='customer', lazy=True)
     payments = db.relationship('Payment', backref='customer', lazy=True)
 
@@ -95,6 +93,25 @@ class InvoiceItem(db.Model):
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
 
+class PaymentMethod(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    payment_type = db.Column(db.String(20), nullable=False)
+
+    customer = db.relationship('Customer', backref='payment_methods', lazy=True)
+
+class Payment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    payment_method_id = db.Column(db.Integer, db.ForeignKey('payment_method.id'), nullable=False)
+    invoice_id = db.Column(db.Integer, db.ForeignKey('invoice.id'), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    payment_method = db.relationship('PaymentMethod', backref='payments')
+    invoice = db.relationship('Invoice', backref='payments')
+    user = db.relationship('User', backref='payments')
 
 with app.app_context():
     db.create_all()
