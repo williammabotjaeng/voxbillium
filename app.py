@@ -40,6 +40,14 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
     password = db.Column(db.String(20), nullable=False)
+    email = db.Column(db.String(100), nullable=False)
+    phone_number = db.Column(db.String(15))
+    address = db.Column(db.String(200))
+
+    invoices = db.relationship('Invoice', backref='user', lazy=True)
+    transactions = db.relationship('Transaction', backref='user', lazy=True)
+    payment_methods = db.relationship('PaymentMethod', backref='user', lazy=True)
+    payments = db.relationship('Payment', backref='user', lazy=True)
 
 class Customer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
