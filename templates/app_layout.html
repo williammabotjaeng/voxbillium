@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma-rtl.min.css">
     <link href="https://unpkg.com/intro.js/minified/introjs.min.css" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <title>VoxBillium | Spoken Billing</title>
 </head>
 <body>
@@ -73,8 +74,8 @@
           <div class="navbar-end">
             <div class="navbar-item">
               <div class="buttons">
-                <a href="/payments" class="button deep-orange">
-                  <strong class="has-text-white">Payments</strong>
+                <a href="/create_invoice" class="button deep-orange">
+                  <strong class="has-text-white">Create Invoice</strong>
                 </a>
                 <a href="/invoices" class="button purple">
                   <strong class="has-text-white">Invoices</strong>
@@ -103,5 +104,21 @@
    <script src="{{ url_for('static', filename='js/guided_tour.js') }}"></script>
    <script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
    <script src="{{ url_for('static', filename='js/pagination.js') }}"></script>
+   <script>
+     function toggleInvoice() {
+      var element = document.getElementById("invoicemic");
+      element.style.backgroundColor = "teal";
+      element.style.borderRadius = "50%";
+
+      // Use D3 to make the mic's background beep
+      d3.select("#invoicemic")
+        .transition()
+        .duration(500)
+        .style("background-color", "orange")
+        .transition()
+        .duration(500)
+        .style("background-color", "teal");
+    }
+   </script>
 </body>
 </html>
