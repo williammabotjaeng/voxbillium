@@ -221,12 +221,6 @@ def home():
     return render_template("home.html", current_user=current_user, form=form, customers=customers)
 
 @login_required
-@app.route("/compliance", methods=["GET"])
-def compliance():
-    contacts = Contact.query.filter_by(user_id=current_user.id).all()
-    return render_template("compliance.html", current_user=current_user, contacts=contacts)
-
-@login_required
 @app.route("/check/<int:contact_id>", methods=["POST"])
 def check(contact_id):
     contact = Contact.query.get_or_404(contact_id)
@@ -348,8 +342,6 @@ import requests
 @app.route("/create_customer", methods=["GET", "POST"])
 @login_required
 def create_customer():
-    print("Config ID", log_config_id)
-    print("API Token", api_token)
     if request.method == "POST":
         first_name = request.form.get("first_name")
         last_name = request.form.get("last_name")
@@ -369,213 +361,50 @@ def create_customer():
         db.session.add(new_customer)
         db.session.commit()
 
+        print(Customer.query.filter_by(user_id=current_user.id).all())
+
         return redirect(url_for("customers"))
     
     return render_template("create_customer.html", current_user=current_user)
 
 
-@app.route("/contacts/delete/<int:contact_id>", methods=["POST"])
+@app.route("/customers/delete/<int:contact_id>", methods=["POST"])
 @login_required
-def delete_contact(contact_id):
-    app.logger.info('Deleting contact with ID: %s', contact_id)
+def delete_customer(customer_id):
 
-    contact = Contact.query.filter_by(user_id=current_user.id, id=contact_id).first()
-    if contact:
-        app.logger.info('Contact found. Deleting contact: %s', contact)
-        db.session.delete(contact)
+    customer = Customer.query.filter_by(user_id=current_user.id, id=customer_id).first()
+
+    if customer:
+        db.session.delete(customer)
         db.session.commit()
-    else:
-        app.logger.warning('Contact not found with ID: %s', contact_id)
-
-    # Log the contact deletion event
-    log_data = {
-        "config_id": f"{log_config_id}",
-        'event': {
-            'message': 'Deleting contact'
-        }
-    }
-    headers = {
-        'Authorization': f"Bearer {api_token}",
-        'Content-Type': 'application/json'
-    }
-
-    response = requests.post('https://audit.aws.eu.pangea.cloud/v1/log', json=log_data, headers=headers)
-    res = response.json()
-
-    # Save the log data to the database
-    log = Log(
-        message=log_data['event']['message'],
-        actor=current_user.id,
-        action='delete',
-        target='Contact',
-        status='success',
-        request_time=res['request_time']
-    )
-    db.session.add(log)
+        
     db.session.commit()
 
-    app.logger.info('Contact deletion completed')
-    return redirect(url_for("contacts"))
+    return redirect(url_for("customers"))
 
-@app.route("/contacts/edit/<int:contact_id>", methods=["GET", "POST"])
+@app.route("/customers/edit/<int:customer_id>", methods=["GET", "POST"])
 @login_required
-def edit_contact(contact_id):
-    contact = Contact.query.filter_by(user_id=current_user.id, id=contact_id).first()
-    print("Contact: ", contact)
-    if not contact:
-        return redirect(url_for("contacts"))
+def edit_customer(customer_id):
+    customer = Customer.query.filter_by(user_id=current_user.id, id=customer_id).first()
+    print("customer: ", customer)
+    if not customer:
+        return redirect(url_for("customers"))
 
     if request.method == "POST":
-        # Update the contact object with the new data from the form
+        # Update the customer object with the new data from the form
         print(request.form)
-        contact.first_name = request.form.get("first_name")
-        contact.last_name = request.form.get("last_name")
-        contact.email = request.form.get("email")
-        contact.phone_number = request.form.get("phone_number")
-        contact.address = request.form.get("address")
-        contact.status = request.form.get("status")
-        contact.ip_address = request.form.get("ip_address")
+        customer.first_name = request.form.get("first_name")
+        customer.last_name = request.form.get("last_name")
+        customer.email = request.form.get("email")
+        customer.phone_number = request.form.get("phone_number")
+        customer.address = request.form.get("address")
+
         db.session.commit()
 
-        # Log the contact update event
-        log_data = {
-            "config_id": f"{log_config_id}",
-            'event': {
-                'message': 'Updating Contact'
-            }
-        }
-        headers = {
-            'Authorization': f"Bearer {api_token}",
-            'Content-Type': 'application/json'
-        }
 
-        response = requests.post('https://audit.aws.eu.pangea.cloud/v1/log', json=log_data, headers=headers)
-        res = response.json()
-
-        # Save the log data to the database
-        log = Log(
-            message=log_data['event']['message'],
-            actor=current_user.id,
-            action='update',
-            target='Contact',
-            status='success',
-            request_time=res['request_time']
-        )
-        db.session.add(log)
-        db.session.commit()
-
-        print("Done, Saved Data!")
-        return redirect(url_for("contacts"))
+        return redirect(url_for("customers"))
     else:
-        return render_template("edit_contact.html", current_user=current_user, contact=contact)
-
-
-@app.route("/verify/<int:contact_id>", methods=["POST"])
-@login_required
-def verify_contact(contact_id):
-    contact = Contact.query.get_or_404(contact_id)
-
-    # Perform verification process using the ip_address field
-    verification_data = {
-        "ip": contact.ip_address,
-        "provider": "cymru"
-    }
-    headers = {
-        "Authorization": f"Bearer {api_token}",
-        "Content-Type": "application/json"
-    }
-    response = requests.post("https://ip-intel.aws.eu.pangea.cloud/v1/reputation", json=verification_data, headers=headers)
-
-    # Handle the response as needed
-    if response.status_code == 200:
-        verification_result = response.json()
-        verdict = verification_result.get("result", {}).get("data", {}).get("verdict")
-        if verdict == "benign":
-            contact.status = "Trusted"
-        else:
-            contact.status = "Untrusted"
-
-        # Log the contact deletion event
-        log_data = {
-            "config_id": f"{log_config_id}",
-            'event': {
-                'message': 'Verifying contact'
-            }
-        }
-
-        headers = {
-            'Authorization': f"Bearer {api_token}",
-            'Content-Type': 'application/json'
-        }
-
-        response = requests.post('https://audit.aws.eu.pangea.cloud/v1/log', json=log_data, headers=headers)
-        res = response.json()
-
-        # Save the log data to the database
-        log = Log(
-            message=log_data['event']['message'],
-            actor=current_user.id,
-            action='verify',
-            target='Contact',
-            status='success',
-            request_time=res['request_time']
-        )
-
-        db.session.add(log)
-  
-
-        db.session.commit()
-
-    return redirect(url_for("contacts"))
-
-@app.route("/logs")
-@login_required
-def logs():
-    user_id = current_user.id
-
-    # Retrieve logs from the database with the current_user's id as the actor field
-    logs = Log.query.filter_by(actor=user_id).all()
-    for log in logs:
-        print(log.request_time)
-
-    return render_template("logs.html", logs=logs, moment=moment, datetime=datetime)
-
-@app.route("/get_contact", methods=["GET", "POST"])
-@login_required
-def get_contact():
-    if request.method == "POST":
-        email = request.form.get("email")
-        contact = Contact.query.filter_by(email=email).first()
-
-        if contact:
-            # Contact found, do something with it
-            return render_template("contact_details.html", contact=contact)
-        else:
-            # Contact not found
-            return render_template("contact_not_found.html")
-    
-    return render_template("get_contact.html", current_user=current_user)
-
-@app.route("/trusted_contacts", methods=["GET"])
-@login_required
-def get_trusted_contacts():
-    trusted_contacts = Contact.query.filter_by(status="Trusted").all()
-
-    return render_template("trusted_contacts.html", contacts=trusted_contacts)
-
-@app.route("/untrusted_contacts", methods=["GET"])
-@login_required
-def get_untrusted_contacts():
-    untrusted_contacts = Contact.query.filter_by(status="Untrusted").all()
-
-    return render_template("untrusted_contacts.html", contacts=untrusted_contacts)
-
-@app.route("/latest_contact", methods=["GET"])
-@login_required
-def get_latest_contact():
-    latest_contact = Contact.query.order_by(Contact.created_at.desc()).first()
-
-    return render_template("latest_contact.html", contact=latest_contact)
+        return render_template("edit_customer.html", current_user=current_user, customer=customer)
 
 @app.route("/docs")
 def docs():

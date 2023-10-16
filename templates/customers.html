@@ -1,15 +1,15 @@
 {% extends 'app_layout.html' %}
 
 {% block content %}
-    {% if contacts %}
+    {% if customers %}
     <div style="margin: 20px">
         <div class="level" style="align-items: center;">
             <div class="level-left">
-                <h1 class="m-5">Contacts</h1>
+                <h1 class="m-5">Customers</h1>
             </div>
             <div class="level-right">
                 <div class="buttons is-flex-direction-row">
-                    <a href="/" class="button is-primary">Create Contact</a>
+                    <a href="/" class="button is-primary">Create Customer</a>
                 </div>
             </div>
         </div>
@@ -19,26 +19,28 @@
                     <th><strong class="has-text-white">Name</strong></th>
                     <th><strong class="has-text-white">Email</strong></th>
                     <th><strong class="has-text-white">Phone</strong></th>
-                    <th><strong class="has-text-white">Status</strong></th>
                     <th><strong class="has-text-white">Delete</strong></th>
                     <th><strong class="has-text-white">Edit</strong></th>
-                    <th><strong class="has-text-white">Verify</strong></th> <!-- Replaced Select with Verify column -->
+                    <th><strong class="has-text-white">Invoice</strong></th> <!-- Replaced Select with Verify column -->
                 </tr>
             </thead>
             <tbody>
-                {% for contact in contacts %}
+                {% for customer in customers %}
                     <tr>
-                        <td>{{ contact.first_name.capitalize() }} {{ contact.last_name.capitalize() if contact.last_name else "" }}</td>
-                        <td>{{ contact.email }}</td>
-                        <td>{{ contact.phone }}</td>
-                        <td>{{ contact.status if contact.status else "Pending" }}</td>
-                        <td class="centered-cells"><form method="post" action="/contacts/delete/{{ contact.id }}"><button class="action-btn" type="submit"><span class="icon">
+                        <td>{{ customer.first_name.capitalize() }} {{ customer.last_name.capitalize() if customer.last_name else "" }}</td>
+                        <td>{{ customer.email }}</td>
+                        <td>{{ customer.phone }}</td>
+                        <td class="centered-cells"><form method="post" action="/customers/delete/{{ customer.id }}"><button class="action-btn" type="submit"><span class="icon">
                             <i class="fas fa-trash-alt"></i>
                           </span></button></form></td>
-                        <td class="centered-cells"><form action="/contacts/edit/{{ contact.id }}"><button class="action-btn" type="submit"><span class="icon">
+                        <td class="centered-cells"><form action="/customers/edit/{{ customer.id }}"><button class="action-btn" type="submit"><span class="icon">
                             <i class="fas fa-pencil-alt"></i>
                           </span></button></form></td>
-                        <td class="centered-cells"><form method="post" action="/verify/{{ contact.id }}" style="margin-right: 10px"><button class="button is-info is-small" type="submit">Verify</button></form></td> <!-- Replaced checkbox with button -->
+                        <td class="centered-cells"><form method="post" action="/verify/{{ customer.id }}" style="margin-right: 10px; text-align: center;"><button class="action-btn" type="submit">
+                            <span class="icon">
+                                <i class="fas fa-microphone"></i>
+                              </span>
+                        </button></form></td> <!-- Replaced checkbox with button -->
                     </tr>
                 {% endfor %}
             </tbody>
@@ -46,7 +48,7 @@
     </div>
     {% else %}
         <div style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
-            <h1 style="margin-top: 80px;">No Contacts yet, <a href="/">Try Creating a Contact...</a></h1>
+            <h1 style="margin-top: 80px;">No Customers yet, <a href="/">Try Creating a Customer...</a></h1>
             <img src="{{ url_for('static', filename='img/empty_icon.png') }}" width="10%" alt="empty_state">
         </div>
     {% endif %}
