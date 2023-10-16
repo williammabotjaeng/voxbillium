@@ -337,65 +337,42 @@ def contact():
 
     return render_template("getintouch.html", form=form, current_user=current_user)
 
-@app.route("/contacts")
+@app.route("/customers")
 @login_required
-def contacts():
-    contacts = Contact.query.filter_by(user_id=current_user.id).all()
-    return render_template("contacts.html", current_user=current_user, contacts=contacts)
+def customers():
+    customers = Customer.query.filter_by(user_id=current_user.id).all()
+    return render_template("customers.html", current_user=current_user, customers=customers)
 
 import requests
 
-@app.route("/create_contact", methods=["GET", "POST"])
+@app.route("/create_customer", methods=["GET", "POST"])
 @login_required
-def create_contact():
+def create_customer():
     print("Config ID", log_config_id)
     print("API Token", api_token)
     if request.method == "POST":
-        contact_type = request.form.get("contact_type")
         first_name = request.form.get("first_name")
+        last_name = request.form.get("last_name")
         email = request.form.get("email")
-        ip_address = request.form.get("ip_address")
+        phone_number = request.form.get("phone_number")
+        address = request.form.get("address")
 
-        new_contact = Contact(
-            contact_type=contact_type,
+        new_customer = Customer(
             first_name=first_name,
+            last_name=last_name,
             email=email,
-            ip_address=ip_address,
+            phone_number=phone_number,
+            address=address,
             user_id=current_user.id  
         )
 
-        db.session.add(new_contact)
-        db.session.commit()
-        
-        # Log the contact creation event
-        log_data = {
-            "config_id": f"{log_config_id}",
-            'event': {
-                'message': 'Creating Contact'
-            }
-        }
-        headers = {
-            'Authorization': f"Bearer {api_token}",
-            'Content-Type': 'application/json'
-        }
-        
-        response = requests.post('https://audit.aws.eu.pangea.cloud/v1/log', json=log_data, headers=headers)
-        res = response.json()
-        # Save the log data to the database
-        log = Log(
-            message=log_data['event']['message'],
-            actor=current_user.id,
-            action='create',
-            target='Contact',
-            status='success',
-            request_time=res['request_time']
-        )
-        db.session.add(log)
+        db.session.add(new_customer)
         db.session.commit()
 
-        return redirect(url_for("contacts"))
+        return redirect(url_for("customers"))
     
-    return render_template("create_contact.html", current_user=current_user)
+    return render_template("create_customer.html", current_user=current_user)
+
 
 @app.route("/contacts/delete/<int:contact_id>", methods=["POST"])
 @login_required
