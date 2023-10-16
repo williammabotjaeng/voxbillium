@@ -41,32 +41,52 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(20), unique=True, nullable=False)
     password = db.Column(db.String(20), nullable=False)
 
-class Contact(db.Model):
+class Customer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    contact_type = db.Column(db.String(15), nullable=False)
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=True)
     email = db.Column(db.String(100), nullable=False)
     phone_number = db.Column(db.String(15))
     address = db.Column(db.String(200))
-    status = db.Column(db.String(10))
-    ip_address = db.Column(db.String(15), nullable=False)
-    vpn_status = db.Column(db.String(15), nullable=True)
-    proxy_status = db.Column(db.String(15), nullable=True)
-    sanction_status = db.Column(db.String(15), nullable=True)
-    breached_status = db.Column(db.String(15), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-    user = db.relationship('User', backref=db.backref('contacts', lazy=True)) 
+    invoices = db.relationship('Invoice', backref='customer', lazy=True)
+    transactions = db.relationship('Transaction', backref='customer', lazy=True)
+    payment_methods = db.relationship('PaymentMethod', backref='customer', lazy=True)
+    payments = db.relationship('Payment', backref='customer', lazy=True)
 
-class Log(db.Model):
+class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    message = db.Column(db.String(100))
-    actor = db.Column(db.String(100))
-    action = db.Column(db.String(100))
-    target = db.Column(db.String(100))
-    status = db.Column(db.String(100))
-    request_time = db.Column(db.String(100))
+    name = db.Column(db.String(100), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    description = db.Column(db.String(200))
+    category = db.Column(db.String(50))
+    image_url = db.Column(db.String(200))
+    sku_code = db.Column(db.String(50))
+
+    # Add any other fields relevant to the product model
+    def __repr__(self):
+        return f"Product(id={self.id}, name='{self.name}', price={self.price})"
+
+class Invoice(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    invoice_number = db.Column(db.String(20), nullable=False)
+    invoice_date = db.Column(db.DateTime, nullable=False)
+    total_amount = db.Column(db.Float, nullable=False)
+    status = db.Column(db.String(20), nullable=False)
+    shipping_address = db.Column(db.String(200))
+    billing_address = db.Column(db.String(200))
+    payment_method_id = db.Column(db.Integer, db.ForeignKey('payment_method.id'), nullable=False)
+
+    items = db.relationship('InvoiceItem', backref='invoice', lazy=True)
+
+class InvoiceItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    invoice_id = db.Column(db.Integer, db.ForeignKey('invoice.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+
 
 with app.app_context():
     db.create_all()
