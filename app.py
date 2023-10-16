@@ -149,10 +149,10 @@ def register():
           
             # Send email to the new user
             msg = Message(
-                subject="Welcome to TopoLock!",
+                subject="Welcome to VoxBillium!",
                 sender=app.config["MAIL_USERNAME"],
                 recipients=[username],
-                body=f"Hi {username},\n\nThank you for registering on our website. We are excited to have you as a member!\n\nBest regards,\nTopoLock Team"
+                body=f"Hi {username},\n\nThank you for registering on our website. We are excited to have you as a member!\n\nBest regards,\nVoxBillium Team"
             )
             mail.send(msg)
 
@@ -278,7 +278,7 @@ def contact():
         msg = Message(
             subject="New Message from Contact Form",
             sender=app.config["MAIL_USERNAME"],
-            recipients=["topolockapp@gmail.com"],
+            recipients=["VoxBilliumapp@gmail.com"],
             body=f"Name: {name}\nEmail: {email}\nMessage: {message}"
         )
 
