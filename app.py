@@ -447,6 +447,12 @@ def edit_customer(customer_id):
         return redirect(url_for("customers"))
     else:
         return render_template("edit_customer.html", current_user=current_user, customer=customer)
+    
+@app.route("/assign/<int:customer_id>", methods=["GET"])
+@login_required
+def verify_contact(customer_id):
+    customer = Customer.query.get_or_404(customer_id)
+    return render_template("create_invoice.html", customer=customer)
 
 @app.route("/docs")
 def docs():
