@@ -146,13 +146,23 @@ def register():
             new_user = User(username=username, password=generate_password_hash(password, method='sha256'))
             db.session.add(new_user)
             db.session.commit()
+
+            message_body = """We are thrilled to welcome you to VoxBillium, the revolutionary web app that is set to transform the way you generate invoices. With VoxBillium, you can harness the power of voice commands to streamline your billing process and save valuable time and effort.\nInspired by the capabilities of AI, VoxBillium seamlessly combines ancient wisdom with cutting-edge technology to simplify your invoicing tasks. Our app empowers you to effortlessly create and manage invoices using your voice, allowing you to multitask and focus on what truly matters in your everyday life.
+            \nFrom freelancers to small businesses, VoxBillium is designed to cater to your invoicing needs. Whether you\'re on the go or tied up with other responsibilities, VoxBillium lets you stay on top of your billing tasks with ease, all at the convenience of a few simple voice commands.
+            \nWe invite you to embrace the efficiency and convenience of VoxBillium today. Experience a new level of productivity as you navigate the world of invoice generation with ease and simplicity.
+            \nTo get started, simply visit our website and follow the quick and easy registration process. Once you're in, you'll have access to a range of powerful features and tools designed to enhance your invoicing experience.
+            \nIf you have any questions or need assistance, our dedicated support team is here to help. Don't hesitate to reach out to us at voxbillium@gmail.com.
+            \nThank you for choosing VoxBillium as your go-to invoicing companion. We're excited to have you on board and can't wait to witness the positive impact VoxBillium will have on your invoicing workflow.
+            \nWishing you success and efficiency in all your invoicing endeavors!
+            \nBest regards,
+            \n\nVoxBillium Team"""
           
             # Send email to the new user
             msg = Message(
-                subject="Welcome to VoxBillium!",
+                subject="Welcome to VoxBillium - Simplify Invoice Generation with Voice Commands!",
                 sender=app.config["MAIL_USERNAME"],
                 recipients=[username],
-                body=f"Hi {username},\n\nThank you for registering on our website. We are excited to have you as a member!\n\nBest regards,\nVoxBillium Team"
+                body=f"Hi {username},\n\n{message_body}"
             )
             mail.send(msg)
 
