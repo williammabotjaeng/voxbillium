@@ -38,19 +38,17 @@ login_manager.login_view = 'login'
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), unique=True, nullable=False)
+    username = db.Column(db.String(20), unique=True, nullable=True)
+    first_name = db.Column(db.String(20), nullable=True)
+    last_name = db.Column(db.String(20), nullable=True)
     password = db.Column(db.String(20), nullable=False)
     email = db.Column(db.String(100), nullable=False)
     phone_number = db.Column(db.String(15))
     address = db.Column(db.String(200))
 
-    invoices = db.relationship('Invoice', backref='user', lazy=True)
-    payment_methods = db.relationship('PaymentMethod', backref='user', lazy=True)
-    payments = db.relationship('Payment', backref='user', lazy=True)
-
 class Customer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(100), nullable=False)
+    first_name = db.Column(db.String(100), nullable=True)
     last_name = db.Column(db.String(100), nullable=True)
     email = db.Column(db.String(100), nullable=False)
     phone_number = db.Column(db.String(15))
@@ -58,7 +56,7 @@ class Customer(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     invoices = db.relationship('Invoice', backref='customer', lazy=True)
-    payment_methods = db.relationship('PaymentMethod', backref='customer', lazy=True)
+    payment_methods = db.relationship('PaymentMethod', backref='customer', lazy=True, cascade='all, delete-orphan')
     payments = db.relationship('Payment', backref='customer', lazy=True)
 
 class Product(db.Model):
@@ -98,8 +96,6 @@ class PaymentMethod(db.Model):
     customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
     payment_type = db.Column(db.String(20), nullable=False)
 
-    customer = db.relationship('Customer', backref='payment_methods', lazy=True)
-
 class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
@@ -121,11 +117,11 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[InputRequired(), Length(min=4, max=100)])
+    email = StringField('Email', validators=[InputRequired(), Length(min=4, max=100)])
     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=64)])
 
 class RegistrationForm(FlaskForm):
-    username = StringField('Username', validators=[InputRequired(), Length(min=4, max=100)])
+    email = StringField('Email', validators=[InputRequired(), Length(min=4, max=100)])
     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=64)])
 
 class ContactForm(FlaskForm):
@@ -158,10 +154,10 @@ def login():
     form = LoginForm()
     if request.method == 'POST':
         if form.validate_on_submit():
-            username = form.username.data
+            email = form.email.data
             password = form.password.data
 
-            user = User.query.filter_by(username=username).first()
+            user = User.query.filter_by(email=email).first()
             
             if not user or not check_password_hash(user.password, password):
                 flash('Please check your login details and try again.')
@@ -180,15 +176,15 @@ def register():
    
     if request.method == 'POST':
         if form.validate_on_submit():
-            username = form.username.data
+            email = form.email.data
             password = form.password.data
 
-            user = User.query.filter_by(username=username).first()
+            user = User.query.filter_by(email=email).first()
             if user:
                 flash('Username already exists. Please choose a different one.')
                 return redirect(url_for('login'))
 
-            new_user = User(username=username, password=generate_password_hash(password, method='sha256'))
+            new_user = User(email=email, password=generate_password_hash(password, method='sha256'))
             db.session.add(new_user)
             db.session.commit()
 
@@ -206,13 +202,13 @@ def register():
             msg = Message(
                 subject="Welcome to VoxBillium - Simplify Invoice Generation with Voice Commands!",
                 sender=app.config["MAIL_USERNAME"],
-                recipients=[username],
-                body=f"Hi {username},\n\n{message_body}"
+                recipients=[email],
+                body=f"Hi {email},\n\n{message_body}"
             )
             mail.send(msg)
 
             flash('Registration successful! An email has been sent to your email address.')
-            user = User.query.filter_by(username=username).first()
+            user = User.query.filter_by(email=email).first()
             login_user(user)
             print("User Created")
             return redirect(url_for('home'))
