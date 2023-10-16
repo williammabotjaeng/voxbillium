@@ -124,16 +124,15 @@ class RegistrationForm(FlaskForm):
     email = StringField('Email', validators=[InputRequired(), Length(min=4, max=100)])
     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=64)])
 
-class ContactForm(FlaskForm):
-    contact_type = SelectField('Contact Type',validators=[InputRequired()], choices=[('Customer', 'Customer'), ('Supplier', 'Supplier')])
+class CustomerForm(FlaskForm):
     first_name = StringField('First Name', validators=[InputRequired(), Length(min=2, max=100)])
-    last_name = StringField('Last Name',  validators=[Length(min=2, max=100)])
+    last_name = StringField('Last Name', validators=[InputRequired(), Length(min=2, max=100)])
     email = StringField('Email', validators=[InputRequired(), Length(min=6, max=100)])
     phone_number = StringField('Phone Number')
     address = StringField('Address')
-    status = StringField('Status')
-    ip_address = StringField('IP Address', validators=[InputRequired()])
-    submit = SubmitField('Create Contact')
+    user_id = StringField('User ID', validators=[InputRequired()])
+    submit = SubmitField('Create Customer')
+
 class ContactUsForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
     email = StringField("Email", validators=[DataRequired()])
@@ -217,11 +216,9 @@ def register():
 @login_required
 @app.route("/home")
 def home():
-    form = ContactForm()
-    contacts = Contact.query.filter_by(user_id=current_user.id).all()
-    trusted_contacts = Contact.query.filter_by(user_id=current_user.id, status="Trusted").all()
-    untrusted_contacts = Contact.query.filter_by(user_id=current_user.id, status="Untrusted").all()
-    return render_template("home.html", current_user=current_user, form=form, contacts=contacts, trusted_contacts=trusted_contacts, untrusted_contacts=untrusted_contacts)
+    form = CustomerForm()
+    customers = Customer.query.filter_by(user_id=current_user.id).all()
+    return render_template("home.html", current_user=current_user, form=form, customers=customers)
 
 @login_required
 @app.route("/compliance", methods=["GET"])

@@ -2,7 +2,7 @@
 {% block content %}
 <div class="columns is-variable is-1-mobile is-0-tablet is-3-desktop is-8-widescreen is-2-fullhd tile" style="margin: 10px; color: white">
     <div class="column tile blue">
-        <form action="{{ url_for('create_contact') }}" class="form" method="POST" style="margin-top: 5px; color: white">
+        <form action="{{ url_for('create_customer') }}" class="form" method="POST" style="margin-top: 5px; color: white">
             {{ form.csrf_token }}
             <div class="field">
                 <label class="label">First Name</label>
@@ -11,11 +11,9 @@
                 </div>
             </div>
             <div class="field">
-                <label class="label">Contact Type</label>
+                <label class="label">Last Name</label>
                 <div class="control">
-                    <div>
-                        {{ form.contact_type(class="input white p-1") }}
-                    </div>
+                    {{ form.last_name(class="input white p-1", placeholder="Enter Last Name") }}
                 </div>
             </div>
             <div class="field">
@@ -25,17 +23,24 @@
                 </div>
             </div>
             <div class="field">
-                <label class="label">IP Address</label>
+                <label class="label">Phone Number</label>
                 <div class="control">
-                    {{ form.ip_address(class="input white p-1", placeholder="Enter IP address") }}
+                    {{ form.phone_number(class="input white p-1", placeholder="Enter Phone Number") }}
+                </div>
+            </div>
+            <div class="field">
+                <label class="label"></label>
+                <div class="control">
+                    {{ form.user_id(class="input white p-1", placeholder="Enter User ID", type="hidden", value=current_user) }}
                 </div>
             </div>
             <div class="field">
                 <div class="control">
-                    {{ form.submit(class="button is-primary", value="Create Contact") }}
+                    {{ form.submit(class="button is-primary", value="Create Customer") }}
                 </div>
             </div>
-        </form>        
+        </form>
+           
     </div>
     <div class="column tile purple">
         <div class="heading">All Contacts</div>
