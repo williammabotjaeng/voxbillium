@@ -368,7 +368,7 @@ def create_customer():
     return render_template("create_customer.html", current_user=current_user)
 
 
-@app.route("/customers/delete/<int:contact_id>", methods=["POST"])
+@app.route("/customers/delete/<int:customer_id>", methods=["POST"])
 @login_required
 def delete_customer(customer_id):
 
@@ -377,7 +377,7 @@ def delete_customer(customer_id):
     if customer:
         db.session.delete(customer)
         db.session.commit()
-        
+
     db.session.commit()
 
     return redirect(url_for("customers"))
@@ -386,7 +386,6 @@ def delete_customer(customer_id):
 @login_required
 def edit_customer(customer_id):
     customer = Customer.query.filter_by(user_id=current_user.id, id=customer_id).first()
-    print("customer: ", customer)
     if not customer:
         return redirect(url_for("customers"))
 

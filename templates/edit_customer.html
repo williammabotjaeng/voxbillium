@@ -3,13 +3,13 @@
 {% block content %}
     <div style="margin: 20px; display: grid; grid-template-columns: 1fr 1fr; grid-gap: 20px;">
         <div>
-            <h1 class="m-5">Edit Contact</h1>
-            <form method="post" action="/contacts/edit/{{ contact.id }}">
-                {% for field in ['first_name', 'email', 'address', 'ip_address'] %}
+            <h1 class="m-5">Edit Customer</h1>
+            <form method="post" action="/customers/edit/{{ customer.id }}">
+                {% for field in ['first_name', 'email', 'address'] %}
                 <div class="field">
                     <label class="label">{{ field|capitalize }}</label>
                     <div class="control">
-                        <input class="input" type="text" name="{{ field }}" value="{{ contact[field] if contact[field] else ''  }}" {% if field == 'first_name' or field == 'email' or field == 'ip_address' %}required{% endif %}>
+                        <input class="input" type="text" name="{{ field }}" value="{{ customer[field] if customer[field] else ''  }}" {% if field == 'first_name' or field == 'email' %}required{% endif %}>
                     </div>
                 </div>
                 {% endfor %}
@@ -21,11 +21,11 @@
                 </div>
         </div>
         <div style="margin-top: 66px;">
-            {% for field in ['last_name', 'phone_number', 'status'] %}
+            {% for field in ['last_name', 'phone_number'] %}
             <div class="field">
                 <label class="label">{{ field|capitalize }}</label>
                 <div class="control">
-                    <input class="input" type="text" name="{{ field }}" value="{{ contact[field] if contact[field] else '' }}" {% if field == 'status' %}readonly{% endif %}>
+                    <input class="input" type="text" name="{{ field }}" value="{{ customer[field] if customer[field] else '' }}">
                 </div>
             </div>
             {% endfor %}
