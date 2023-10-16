@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/android-icon-48x48.png') }}" type="image/png">
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma-rtl.min.css">
+    <link href="https://unpkg.com/intro.js/minified/introjs.min.css" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <title>VoxBillium | Spoken Billing</title>
+</head>
+<body>
+    <nav class="navbar main-nav" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+          <a class="" href="/">
+            <img src="{{ url_for('static', filename='img/android-icon-96x96.png') }}" alt="Logo" style="margin-left: 10px" width="64" height="96">
+          </a>
+      
+          <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          </a>
+        </div>
+      
+        <div id="nav-main-menu-app" class="navbar-menu">
+          <div class="navbar-start">
+            <a href="/" class="navbar-item">
+              Home
+            </a>
+            <a href="/docs" class="navbar-item">
+              Documentation
+            </a>
+            <div class="navbar-item has-dropdown is-hoverable">
+              <a class="navbar-link">
+                More
+              </a>
+      
+              <div class="navbar-dropdown">
+                <a href="/what" class="navbar-item">
+                  What is TopLock?
+                </a>
+                <a href="/getintouch" class="navbar-item">
+                  Get in Touch
+                </a>
+                <hr class="navbar-divider">
+                <a href="mailto:williammabotjaeng@gmail.com" class="navbar-item">
+                  Report an issue
+                </a>
+              </div>
+            </div>
+          </div>
+          {% if not current_user.is_authenticated %}
+          <div class="navbar-end">
+            <div class="navbar-item">
+              <div class="buttons">
+                <a href="/register" class="button is-primary">
+                  <strong>Sign up</strong>
+                </a>
+                <a href="/login" class="button is-light login-button">
+                  Log in
+                </a>
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <div class="navbar-end">
+            <div class="navbar-item">
+              <div class="buttons">
+                <a href="/invoices" class="button purple">
+                  <strong class="has-text-white">Invoices</strong>
+                </a>
+                <a href="/customers" class="button is-primary">
+                  <strong>Customers</strong>
+                </a>
+                <a href="/logout" class="button is-light login-button">
+                  Logout
+                </a>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+        </div>
+      </nav>
+      <main style="width: 100%">
+        {% block content %}{% endblock %}
+      </main>
+<footer class="teal layout-footer">
+    <p>Copyright &copy; 2023 VoxBillium</p>
+</footer>  
+   <!-- Compiled and minified JavaScript -->
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+   <script src="{{ url_for('static', filename='js/guided_tour.js') }}"></script>
+   <script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
+   <script src="{{ url_for('static', filename='js/pagination.js') }}"></script>
+   <script>
+     function toggleInvoice() {
+      var element = document.getElementById("invoicemic");
+      element.style.backgroundColor = "teal";
+      element.style.borderRadius = "50%";
+
+      // Use D3 to make the mic's background beep
+      d3.select("#invoicemic")
+        .transition()
+        .duration(500)
+        .style("background-color", "orange")
+        .transition()
+        .duration(500)
+        .style("background-color", "teal");
+    }
+   </script>
+</body>
+</html>
