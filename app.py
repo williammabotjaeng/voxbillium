@@ -38,35 +38,76 @@ login_manager.login_view = 'login'
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), unique=True, nullable=False)
+    username = db.Column(db.String(20), unique=True, nullable=True)
+    first_name = db.Column(db.String(20), nullable=True)
+    last_name = db.Column(db.String(20), nullable=True)
     password = db.Column(db.String(20), nullable=False)
+    email = db.Column(db.String(100), nullable=False)
+    phone_number = db.Column(db.String(15))
+    address = db.Column(db.String(200))
 
-class Contact(db.Model):
+class Customer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    contact_type = db.Column(db.String(15), nullable=False)
-    first_name = db.Column(db.String(100), nullable=False)
+    first_name = db.Column(db.String(100), nullable=True)
     last_name = db.Column(db.String(100), nullable=True)
     email = db.Column(db.String(100), nullable=False)
     phone_number = db.Column(db.String(15))
     address = db.Column(db.String(200))
-    status = db.Column(db.String(10))
-    ip_address = db.Column(db.String(15), nullable=False)
-    vpn_status = db.Column(db.String(15), nullable=True)
-    proxy_status = db.Column(db.String(15), nullable=True)
-    sanction_status = db.Column(db.String(15), nullable=True)
-    breached_status = db.Column(db.String(15), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-    user = db.relationship('User', backref=db.backref('contacts', lazy=True)) 
+    invoices = db.relationship('Invoice', backref='customer', lazy=True)
+    payment_methods = db.relationship('PaymentMethod', backref='customer', lazy=True, cascade='all, delete-orphan')
+    payments = db.relationship('Payment', backref='customer', lazy=True)
 
-class Log(db.Model):
+class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    message = db.Column(db.String(100))
-    actor = db.Column(db.String(100))
-    action = db.Column(db.String(100))
-    target = db.Column(db.String(100))
-    status = db.Column(db.String(100))
-    request_time = db.Column(db.String(100))
+    name = db.Column(db.String(100), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    description = db.Column(db.String(200))
+    category = db.Column(db.String(50))
+    image_url = db.Column(db.String(200))
+    sku_code = db.Column(db.String(50))
+
+    # Add any other fields relevant to the product model
+    def __repr__(self):
+        return f"Product(id={self.id}, name='{self.name}', price={self.price})"
+
+class Invoice(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    invoice_number = db.Column(db.String(20), nullable=False)
+    invoice_date = db.Column(db.DateTime, nullable=False)
+    total_amount = db.Column(db.Float, nullable=False)
+    status = db.Column(db.String(20), nullable=False)
+    shipping_address = db.Column(db.String(200))
+    billing_address = db.Column(db.String(200))
+    payment_method_id = db.Column(db.Integer, db.ForeignKey('payment_method.id'), nullable=False)
+
+    items = db.relationship('InvoiceItem', backref='invoice', lazy=True)
+
+class InvoiceItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    invoice_id = db.Column(db.Integer, db.ForeignKey('invoice.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+
+class PaymentMethod(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    payment_type = db.Column(db.String(20), nullable=False)
+
+class Payment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    payment_method_id = db.Column(db.Integer, db.ForeignKey('payment_method.id'), nullable=False)
+    invoice_id = db.Column(db.Integer, db.ForeignKey('invoice.id'), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    payment_method = db.relationship('PaymentMethod', backref='payments')
+    invoice = db.relationship('Invoice', backref='payments')
+    user = db.relationship('User', backref='payments')
 
 with app.app_context():
     db.create_all()
@@ -76,23 +117,22 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[InputRequired(), Length(min=4, max=100)])
+    email = StringField('Email', validators=[InputRequired(), Length(min=4, max=100)])
     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=64)])
 
 class RegistrationForm(FlaskForm):
-    username = StringField('Username', validators=[InputRequired(), Length(min=4, max=100)])
+    email = StringField('Email', validators=[InputRequired(), Length(min=4, max=100)])
     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=64)])
 
-class ContactForm(FlaskForm):
-    contact_type = SelectField('Contact Type',validators=[InputRequired()], choices=[('Customer', 'Customer'), ('Supplier', 'Supplier')])
+class CustomerForm(FlaskForm):
     first_name = StringField('First Name', validators=[InputRequired(), Length(min=2, max=100)])
-    last_name = StringField('Last Name',  validators=[Length(min=2, max=100)])
+    last_name = StringField('Last Name', validators=[InputRequired(), Length(min=2, max=100)])
     email = StringField('Email', validators=[InputRequired(), Length(min=6, max=100)])
     phone_number = StringField('Phone Number')
     address = StringField('Address')
-    status = StringField('Status')
-    ip_address = StringField('IP Address', validators=[InputRequired()])
-    submit = SubmitField('Create Contact')
+    user_id = StringField('User ID', validators=[InputRequired()])
+    submit = SubmitField('Create Customer')
+
 class ContactUsForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
     email = StringField("Email", validators=[DataRequired()])
@@ -113,10 +153,10 @@ def login():
     form = LoginForm()
     if request.method == 'POST':
         if form.validate_on_submit():
-            username = form.username.data
+            email = form.email.data
             password = form.password.data
 
-            user = User.query.filter_by(username=username).first()
+            user = User.query.filter_by(email=email).first()
             
             if not user or not check_password_hash(user.password, password):
                 flash('Please check your login details and try again.')
@@ -135,29 +175,39 @@ def register():
    
     if request.method == 'POST':
         if form.validate_on_submit():
-            username = form.username.data
+            email = form.email.data
             password = form.password.data
 
-            user = User.query.filter_by(username=username).first()
+            user = User.query.filter_by(email=email).first()
             if user:
                 flash('Username already exists. Please choose a different one.')
                 return redirect(url_for('login'))
 
-            new_user = User(username=username, password=generate_password_hash(password, method='sha256'))
+            new_user = User(email=email, password=generate_password_hash(password, method='sha256'))
             db.session.add(new_user)
             db.session.commit()
+
+            message_body = """We are thrilled to welcome you to VoxBillium, the revolutionary web app that is set to transform the way you generate invoices. With VoxBillium, you can harness the power of voice commands to streamline your billing process and save valuable time and effort.\nInspired by the capabilities of AI, VoxBillium seamlessly combines ancient wisdom with cutting-edge technology to simplify your invoicing tasks. Our app empowers you to effortlessly create and manage invoices using your voice, allowing you to multitask and focus on what truly matters in your everyday life.
+            \nFrom freelancers to small businesses, VoxBillium is designed to cater to your invoicing needs. Whether you\'re on the go or tied up with other responsibilities, VoxBillium lets you stay on top of your billing tasks with ease, all at the convenience of a few simple voice commands.
+            \nWe invite you to embrace the efficiency and convenience of VoxBillium today. Experience a new level of productivity as you navigate the world of invoice generation with ease and simplicity.
+            \nTo get started, simply visit our website and follow the quick and easy registration process. Once you're in, you'll have access to a range of powerful features and tools designed to enhance your invoicing experience.
+            \nIf you have any questions or need assistance, our dedicated support team is here to help. Don't hesitate to reach out to us at voxbillium@gmail.com.
+            \nThank you for choosing VoxBillium as your go-to invoicing companion. We're excited to have you on board and can't wait to witness the positive impact VoxBillium will have on your invoicing workflow.
+            \nWishing you success and efficiency in all your invoicing endeavors!
+            \nBest regards,
+            \n\nVoxBillium Team"""
           
             # Send email to the new user
             msg = Message(
-                subject="Welcome to VoxBillium!",
+                subject="Welcome to VoxBillium - Simplify Invoice Generation with Voice Commands!",
                 sender=app.config["MAIL_USERNAME"],
-                recipients=[username],
-                body=f"Hi {username},\n\nThank you for registering on our website. We are excited to have you as a member!\n\nBest regards,\nVoxBillium Team"
+                recipients=[email],
+                body=f"Hi {email},\n\n{message_body}"
             )
             mail.send(msg)
 
             flash('Registration successful! An email has been sent to your email address.')
-            user = User.query.filter_by(username=username).first()
+            user = User.query.filter_by(email=email).first()
             login_user(user)
             print("User Created")
             return redirect(url_for('home'))
@@ -166,17 +216,9 @@ def register():
 @login_required
 @app.route("/home")
 def home():
-    form = ContactForm()
-    contacts = Contact.query.filter_by(user_id=current_user.id).all()
-    trusted_contacts = Contact.query.filter_by(user_id=current_user.id, status="Trusted").all()
-    untrusted_contacts = Contact.query.filter_by(user_id=current_user.id, status="Untrusted").all()
-    return render_template("home.html", current_user=current_user, form=form, contacts=contacts, trusted_contacts=trusted_contacts, untrusted_contacts=untrusted_contacts)
-
-@login_required
-@app.route("/compliance", methods=["GET"])
-def compliance():
-    contacts = Contact.query.filter_by(user_id=current_user.id).all()
-    return render_template("compliance.html", current_user=current_user, contacts=contacts)
+    form = CustomerForm()
+    customers = Customer.query.filter_by(user_id=current_user.id).all()
+    return render_template("home.html", current_user=current_user, form=form, customers=customers)
 
 @login_required
 @app.route("/check/<int:contact_id>", methods=["POST"])
@@ -263,6 +305,40 @@ def check(contact_id):
 
     return redirect(url_for("compliance"))
 
+@app.route("/create_invoice", methods=["GET", "POST"])
+@login_required
+def create_invoice():
+    if request.method == "POST":
+        customer_id = request.form.get("customer_id")
+        invoice_number = request.form.get("invoice_number")
+        invoice_date = request.form.get("invoice_date")
+        total_amount = request.form.get("total_amount")
+        status = request.form.get("status")
+        shipping_address = request.form.get("shipping_address")
+        billing_address = request.form.get("billing_address")
+        payment_method_id = request.form.get("payment_method_id")
+
+        new_invoice = Invoice(
+            customer_id=customer_id,
+            invoice_number=invoice_number,
+            invoice_date=invoice_date,
+            total_amount=total_amount,
+            status='Pending',
+            shipping_address=shipping_address,
+            billing_address=billing_address,
+            payment_method_id=payment_method_id
+        )
+
+        db.session.add(new_invoice)
+        db.session.commit()
+
+        print(Invoice.query.filter_by(customer_id=customer_id).all())
+
+        return redirect(url_for("invoices"))
+    
+    return render_template("create_invoice.html", current_user=current_user)
+
+
 @app.route("/what")
 def what():
     return render_template("what.html")
@@ -289,268 +365,94 @@ def contact():
 
     return render_template("getintouch.html", form=form, current_user=current_user)
 
-@app.route("/contacts")
+@app.route("/customers")
 @login_required
-def contacts():
-    contacts = Contact.query.filter_by(user_id=current_user.id).all()
-    return render_template("contacts.html", current_user=current_user, contacts=contacts)
+def customers():
+    customers = Customer.query.filter_by(user_id=current_user.id).all()
+    return render_template("customers.html", current_user=current_user, customers=customers)
+
+@app.route("/invoices")
+@login_required
+def invoices():
+    customers = Customer.query.filter_by(user_id=current_user.id).all()
+    invoices = []
+    for customer in customers:
+        invoices.extend(customer.invoices)
+    return render_template("invoices.html", current_user=current_user, invoices=invoices)
 
 import requests
 
-@app.route("/create_contact", methods=["GET", "POST"])
+@app.route("/create_customer", methods=["GET", "POST"])
 @login_required
-def create_contact():
-    print("Config ID", log_config_id)
-    print("API Token", api_token)
+def create_customer():
     if request.method == "POST":
-        contact_type = request.form.get("contact_type")
         first_name = request.form.get("first_name")
+        last_name = request.form.get("last_name")
         email = request.form.get("email")
-        ip_address = request.form.get("ip_address")
+        phone_number = request.form.get("phone_number")
+        address = request.form.get("address")
 
-        new_contact = Contact(
-            contact_type=contact_type,
+        new_customer = Customer(
             first_name=first_name,
+            last_name=last_name,
             email=email,
-            ip_address=ip_address,
+            phone_number=phone_number,
+            address=address,
             user_id=current_user.id  
         )
 
-        db.session.add(new_contact)
-        db.session.commit()
-        
-        # Log the contact creation event
-        log_data = {
-            "config_id": f"{log_config_id}",
-            'event': {
-                'message': 'Creating Contact'
-            }
-        }
-        headers = {
-            'Authorization': f"Bearer {api_token}",
-            'Content-Type': 'application/json'
-        }
-        
-        response = requests.post('https://audit.aws.eu.pangea.cloud/v1/log', json=log_data, headers=headers)
-        res = response.json()
-        # Save the log data to the database
-        log = Log(
-            message=log_data['event']['message'],
-            actor=current_user.id,
-            action='create',
-            target='Contact',
-            status='success',
-            request_time=res['request_time']
-        )
-        db.session.add(log)
+        db.session.add(new_customer)
         db.session.commit()
 
-        return redirect(url_for("contacts"))
+        print(Customer.query.filter_by(user_id=current_user.id).all())
+
+        return redirect(url_for("customers"))
     
-    return render_template("create_contact.html", current_user=current_user)
+    return render_template("create_customer.html", current_user=current_user)
 
-@app.route("/contacts/delete/<int:contact_id>", methods=["POST"])
+
+@app.route("/customers/delete/<int:customer_id>", methods=["POST"])
 @login_required
-def delete_contact(contact_id):
-    app.logger.info('Deleting contact with ID: %s', contact_id)
+def delete_customer(customer_id):
 
-    contact = Contact.query.filter_by(user_id=current_user.id, id=contact_id).first()
-    if contact:
-        app.logger.info('Contact found. Deleting contact: %s', contact)
-        db.session.delete(contact)
+    customer = Customer.query.filter_by(user_id=current_user.id, id=customer_id).first()
+
+    if customer:
+        db.session.delete(customer)
         db.session.commit()
-    else:
-        app.logger.warning('Contact not found with ID: %s', contact_id)
 
-    # Log the contact deletion event
-    log_data = {
-        "config_id": f"{log_config_id}",
-        'event': {
-            'message': 'Deleting contact'
-        }
-    }
-    headers = {
-        'Authorization': f"Bearer {api_token}",
-        'Content-Type': 'application/json'
-    }
-
-    response = requests.post('https://audit.aws.eu.pangea.cloud/v1/log', json=log_data, headers=headers)
-    res = response.json()
-
-    # Save the log data to the database
-    log = Log(
-        message=log_data['event']['message'],
-        actor=current_user.id,
-        action='delete',
-        target='Contact',
-        status='success',
-        request_time=res['request_time']
-    )
-    db.session.add(log)
     db.session.commit()
 
-    app.logger.info('Contact deletion completed')
-    return redirect(url_for("contacts"))
+    return redirect(url_for("customers"))
 
-@app.route("/contacts/edit/<int:contact_id>", methods=["GET", "POST"])
+@app.route("/customers/edit/<int:customer_id>", methods=["GET", "POST"])
 @login_required
-def edit_contact(contact_id):
-    contact = Contact.query.filter_by(user_id=current_user.id, id=contact_id).first()
-    print("Contact: ", contact)
-    if not contact:
-        return redirect(url_for("contacts"))
+def edit_customer(customer_id):
+    customer = Customer.query.filter_by(user_id=current_user.id, id=customer_id).first()
+    if not customer:
+        return redirect(url_for("customers"))
 
     if request.method == "POST":
-        # Update the contact object with the new data from the form
+        # Update the customer object with the new data from the form
         print(request.form)
-        contact.first_name = request.form.get("first_name")
-        contact.last_name = request.form.get("last_name")
-        contact.email = request.form.get("email")
-        contact.phone_number = request.form.get("phone_number")
-        contact.address = request.form.get("address")
-        contact.status = request.form.get("status")
-        contact.ip_address = request.form.get("ip_address")
+        customer.first_name = request.form.get("first_name")
+        customer.last_name = request.form.get("last_name")
+        customer.email = request.form.get("email")
+        customer.phone_number = request.form.get("phone_number")
+        customer.address = request.form.get("address")
+
         db.session.commit()
 
-        # Log the contact update event
-        log_data = {
-            "config_id": f"{log_config_id}",
-            'event': {
-                'message': 'Updating Contact'
-            }
-        }
-        headers = {
-            'Authorization': f"Bearer {api_token}",
-            'Content-Type': 'application/json'
-        }
 
-        response = requests.post('https://audit.aws.eu.pangea.cloud/v1/log', json=log_data, headers=headers)
-        res = response.json()
-
-        # Save the log data to the database
-        log = Log(
-            message=log_data['event']['message'],
-            actor=current_user.id,
-            action='update',
-            target='Contact',
-            status='success',
-            request_time=res['request_time']
-        )
-        db.session.add(log)
-        db.session.commit()
-
-        print("Done, Saved Data!")
-        return redirect(url_for("contacts"))
+        return redirect(url_for("customers"))
     else:
-        return render_template("edit_contact.html", current_user=current_user, contact=contact)
-
-
-@app.route("/verify/<int:contact_id>", methods=["POST"])
-@login_required
-def verify_contact(contact_id):
-    contact = Contact.query.get_or_404(contact_id)
-
-    # Perform verification process using the ip_address field
-    verification_data = {
-        "ip": contact.ip_address,
-        "provider": "cymru"
-    }
-    headers = {
-        "Authorization": f"Bearer {api_token}",
-        "Content-Type": "application/json"
-    }
-    response = requests.post("https://ip-intel.aws.eu.pangea.cloud/v1/reputation", json=verification_data, headers=headers)
-
-    # Handle the response as needed
-    if response.status_code == 200:
-        verification_result = response.json()
-        verdict = verification_result.get("result", {}).get("data", {}).get("verdict")
-        if verdict == "benign":
-            contact.status = "Trusted"
-        else:
-            contact.status = "Untrusted"
-
-        # Log the contact deletion event
-        log_data = {
-            "config_id": f"{log_config_id}",
-            'event': {
-                'message': 'Verifying contact'
-            }
-        }
-
-        headers = {
-            'Authorization': f"Bearer {api_token}",
-            'Content-Type': 'application/json'
-        }
-
-        response = requests.post('https://audit.aws.eu.pangea.cloud/v1/log', json=log_data, headers=headers)
-        res = response.json()
-
-        # Save the log data to the database
-        log = Log(
-            message=log_data['event']['message'],
-            actor=current_user.id,
-            action='verify',
-            target='Contact',
-            status='success',
-            request_time=res['request_time']
-        )
-
-        db.session.add(log)
-  
-
-        db.session.commit()
-
-    return redirect(url_for("contacts"))
-
-@app.route("/logs")
-@login_required
-def logs():
-    user_id = current_user.id
-
-    # Retrieve logs from the database with the current_user's id as the actor field
-    logs = Log.query.filter_by(actor=user_id).all()
-    for log in logs:
-        print(log.request_time)
-
-    return render_template("logs.html", logs=logs, moment=moment, datetime=datetime)
-
-@app.route("/get_contact", methods=["GET", "POST"])
-@login_required
-def get_contact():
-    if request.method == "POST":
-        email = request.form.get("email")
-        contact = Contact.query.filter_by(email=email).first()
-
-        if contact:
-            # Contact found, do something with it
-            return render_template("contact_details.html", contact=contact)
-        else:
-            # Contact not found
-            return render_template("contact_not_found.html")
+        return render_template("edit_customer.html", current_user=current_user, customer=customer)
     
-    return render_template("get_contact.html", current_user=current_user)
-
-@app.route("/trusted_contacts", methods=["GET"])
+@app.route("/assign/<int:customer_id>", methods=["GET"])
 @login_required
-def get_trusted_contacts():
-    trusted_contacts = Contact.query.filter_by(status="Trusted").all()
-
-    return render_template("trusted_contacts.html", contacts=trusted_contacts)
-
-@app.route("/untrusted_contacts", methods=["GET"])
-@login_required
-def get_untrusted_contacts():
-    untrusted_contacts = Contact.query.filter_by(status="Untrusted").all()
-
-    return render_template("untrusted_contacts.html", contacts=untrusted_contacts)
-
-@app.route("/latest_contact", methods=["GET"])
-@login_required
-def get_latest_contact():
-    latest_contact = Contact.query.order_by(Contact.created_at.desc()).first()
-
-    return render_template("latest_contact.html", contact=latest_contact)
+def verify_contact(customer_id):
+    customer = Customer.query.get_or_404(customer_id)
+    return render_template("create_invoice.html", customer=customer)
 
 @app.route("/docs")
 def docs():
