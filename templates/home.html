@@ -43,16 +43,16 @@
            
     </div>
     <div class="column tile purple">
-        <div class="heading">All Contacts</div>
+        <div class="heading">All Customers</div>
         <div class="tile" style="margin-top: 20px">
-            {% if contacts %}
+            {% if customers %}
         <ul>
-            {% for contact in contacts %}
-                <li><strong class="has-text-white">{{ contact.first_name.capitalize() }}</strong> - <em>{{ contact.status if contact.status else "Pending" }}</em></li>
+            {% for customer in customers %}
+                <li><strong class="has-text-white">{{ customer.first_name.capitalize() }}</strong> - <em>{{ customer.invoices|length }}</em></li>
             {% endfor %}
         </ul>
     {% else %}
-        <h1>No contacts yet, Try Create a New Contact!</h1>
+        <h1>No customers yet, Try Create a New Customer!</h1>
     {% endif %}
         </div>
 

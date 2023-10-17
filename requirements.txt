@@ -8,3 +8,6 @@ python-dotenv
 gunicorn
 Flask-Mail
 moment
+google-cloud-speech
+google-cloud-api-keys
+Werkzeug==2.3.0

@@ -9,6 +9,11 @@ from wtforms.validators import InputRequired, Length, DataRequired, Email
 from dotenv import load_dotenv
 from datetime import datetime
 
+# from google.cloud import api_keys_v2
+# from google.cloud.api_keys_v2 import Key
+from google.cloud import api_keys_v2
+from google.cloud.api_keys_v2 import Key
+
 import moment
 import requests
 import os
@@ -29,6 +34,7 @@ app.config["MAIL_PORT"] = 465
 app.config["MAIL_USE_SSL"] = True
 app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")  # Replace with your email address
 app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD") # Replace with your email password
+app.config["PROJECT_ID"] = os.getenv("PROJECT_ID") 
 
 mail = Mail(app)
 
@@ -115,6 +121,40 @@ with app.app_context():
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+def create_api_key(project_id: str, suffix: str) -> Key:
+    """
+    Creates and restrict an API key. Add the suffix for uniqueness.
+
+    TODO(Developer):
+    1. Before running this sample,
+      set up ADC as described in https://cloud.google.com/docs/authentication/external/set-up-adc
+    2. Make sure you have the necessary permission to create API keys.
+
+    Args:
+        project_id: Google Cloud project id.
+
+    Returns:
+        response: Returns the created API Key.
+    """
+    # Create the API Keys client.
+    client = api_keys_v2.ApiKeysClient()
+
+    key = api_keys_v2.Key()
+    key.display_name = f"My first API key - {suffix}"
+
+    # Initialize request and set arguments.
+    request = api_keys_v2.CreateKeyRequest()
+    request.parent = f"projects/{project_id}/locations/global"
+    request.key = key
+
+    # Make the request and wait for the operation to complete.
+    response = client.create_key(request=request).result()
+
+    print(f"Successfully created an API key: {response.name}")
+    # For authenticating with the API key, use the value in "response.key_string".
+    # To restrict the usage of this API key, use the value in "response.name".
+    return response
 
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[InputRequired(), Length(min=4, max=100)])
@@ -217,6 +257,8 @@ def register():
 @app.route("/home")
 def home():
     form = CustomerForm()
+    api_key_res = create_api_key(app.config["PROJECT_ID"], "billium")
+    print("API KEY Response", api_key_res)
     customers = Customer.query.filter_by(user_id=current_user.id).all()
     return render_template("home.html", current_user=current_user, form=form, customers=customers)
 
@@ -379,8 +421,6 @@ def invoices():
     for customer in customers:
         invoices.extend(customer.invoices)
     return render_template("invoices.html", current_user=current_user, invoices=invoices)
-
-import requests
 
 @app.route("/create_customer", methods=["GET", "POST"])
 @login_required
