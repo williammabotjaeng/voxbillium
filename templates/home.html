@@ -58,30 +58,30 @@
 
     </div>
     <div class="column tile teal">
-        <div class="heading">Trusted Contacts</div>
+        <div class="heading">Latest Payments</div>
         <div class="tile" style="margin-top: 20px">
-            {% if trusted_contacts %}
+            {% if payments %}
         <ul>
-            {% for contact in trusted_contacts %}
-                <li><strong class="has-text-white">{{ contact.first_name.capitalize() }}</strong> - <em>{{ contact.status if contact.status else "Pending" }}</em></li>
+            {% for payment in payments %}
+                <li><strong class="has-text-white">{{ payment.customer_id }}</strong> - <em>{{ payment.amount }}</em></li>
             {% endfor %}
         </ul>
     {% else %}
-        <h1>No contacts yet, Try Validating your Contacts!</h1>
+        <h1>No payments yet, Try contacting customers!</h1>
     {% endif %}
         </div>
     </div>
     <div class="column tile deep-orange">
-        <div class="heading">Untrusted Contacts</div>
+        <div class="heading">Latest Invoices</div>
         <div class="tile" style="margin-top: 20px">
-            {% if untrusted_contacts %}
+            {% if invoices %}
         <ul>
-            {% for contact in untrusted_contacts %}
-                <li><strong class="has-text-white">{{ contact.first_name.capitalize() }}</strong> - <em>{{ contact.status if contact.status else "Pending" }}</em></li>
+            {% for invoice in invoices %}
+                <li><strong class="has-text-white">{{ invoice.invoice_date }}</strong> <strong class="has-text-white">{{ invoice.total_amount }}</strong> - <em>{{ invoice.status }}</em></li>
             {% endfor %}
         </ul>
     {% else %}
-        <h1>No contacts yet, Try Validating your Contacts!</h1>
+        <h1>No invoices yet, Try create some Invoices!</h1>
     {% endif %}
         </div>
     </div>
