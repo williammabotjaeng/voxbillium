@@ -62,6 +62,8 @@ class User(UserMixin, db.Model):
     address = db.Column(db.String(200))
     session_engaged = db.Column(db.Boolean, default=False)
     engaged_customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'))
+    engaged_product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
+    engaged_invoice_item_id = db.Column(db.Integer, db.ForeignKey('invoice_item.id'))
     active_invoice_id = db.Column(db.Integer, db.ForeignKey('invoice.id'))
 
 class Customer(db.Model):
@@ -99,7 +101,7 @@ class Invoice(db.Model):
     status = db.Column(db.String(20), nullable=False)
     shipping_address = db.Column(db.String(200))
     billing_address = db.Column(db.String(200))
-    payment_method_id = db.Column(db.Integer, db.ForeignKey('payment_method.id'), nullable=False)
+    payment_method_id = db.Column(db.Integer, db.ForeignKey('payment_method.id'))
 
     items = db.relationship('InvoiceItem', backref='invoice', lazy=True)
 
@@ -107,7 +109,7 @@ class InvoiceItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     invoice_id = db.Column(db.Integer, db.ForeignKey('invoice.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
+    quantity = db.Column(db.Integer)
 
 class PaymentMethod(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -253,14 +255,29 @@ def transcribe_streaming_v2(
                     elif result.is_error():
                         print(result.errors)
                     new_invoice = Invoice(status="Pending", customer_id=current_user.engaged_customer_id, order_id=order_id)
+                    
+                    
                     db.session.add(new_invoice)
                     db.session.commit()
-
-                    # Assign the new invoice ID to the variable
+                    print("Invoice ID", new_invoice.id)
+                    print("Invoice Object", new_invoice)
                     current_user.active_invoice_id = new_invoice.id
+                    db.session.commit()
                 
             else:
-                pass
+                res_arr = result.alternatives[0].transcript.split(" ")
+                current_user.engaged_product_id = numbers.index(res_arr[1])
+                temp_quantity = numbers.index(res_arr[3])
+                print("Response", res_arr)
+                temp_invoice_item = InvoiceItem(
+                    product_id=current_user.engaged_product_id,
+                    invoice_id=current_user.active_invoice_id,
+                    quantity=temp_quantity
+                )
+                print("Temp Invoice", temp_invoice_item)
+                db.session.add(temp_invoice_item)
+                db.session.commit()
+                
                 
 
     return responses
