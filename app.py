@@ -14,6 +14,9 @@ from datetime import datetime
 from google.cloud import api_keys_v2
 from google.cloud.api_keys_v2 import Key
 
+from google.cloud.speech_v2 import SpeechClient
+from google.cloud.speech_v2.types import cloud_speech
+
 import argparse
 
 from google.cloud import speech
@@ -55,6 +58,8 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(100), nullable=False)
     phone_number = db.Column(db.String(15))
     address = db.Column(db.String(200))
+    session_engaged = db.Column(db.Boolean, default=False)
+    engaged_customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'))
 
 class Customer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -147,56 +152,73 @@ def create_api_key(project_id: str, suffix: str) -> Key:
     return response
 
 
-# [START speech_transcribe_streaming]
-def transcribe_streaming(stream_file: str) -> speech.RecognitionConfig:
-    """Streams transcription of the given audio file."""
+def transcribe_streaming_v2(
+    project_id: str,
+    audio_file: str,
+) -> cloud_speech.StreamingRecognizeResponse:
+    """Transcribes audio from audio file stream.
 
-    client = speech.SpeechClient()
+    Args:
+        project_id: The GCP project ID.
+        audio_file: The path to the audio file to transcribe.
 
-    # [START speech_python_migration_streaming_request]
-    with open(stream_file, "rb") as audio_file:
-        content = audio_file.read()
+    Returns:
+        The response from the transcribe method.
+    """
 
-    # In practice, stream should be a generator yielding chunks of audio data.
-    stream = [content]
+    numbers = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine',
+           'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty']
+    # Instantiates a client
+    client = SpeechClient()
 
-    requests = (
-        speech.StreamingRecognizeRequest(audio_content=chunk) for chunk in stream
+    project_id = app.config["PROJECT_ID"]
+
+    # Reads a file as bytes
+    with open(audio_file, "rb") as f:
+        content = f.read()
+
+    # In practice, stream should be a generator yielding chunks of audio data
+    chunk_length = len(content) // 5
+    stream = [
+        content[start : start + chunk_length]
+        for start in range(0, len(content), chunk_length)
+    ]
+    audio_requests = (
+        cloud_speech.StreamingRecognizeRequest(audio=audio) for audio in stream
     )
 
-    config = speech.RecognitionConfig(
-        encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-        sample_rate_hertz=16000,
-        language_code="en-US",
+    recognition_config = cloud_speech.RecognitionConfig(
+        auto_decoding_config=cloud_speech.AutoDetectDecodingConfig(),
+        language_codes=["en-US"],
+        model="long",
+    )
+    streaming_config = cloud_speech.StreamingRecognitionConfig(
+        config=recognition_config
+    )
+    config_request = cloud_speech.StreamingRecognizeRequest(
+        recognizer=f"projects/{project_id}/locations/global/recognizers/_",
+        streaming_config=streaming_config,
     )
 
-    streaming_config = speech.StreamingRecognitionConfig(config=config)
+    def requests(config: cloud_speech.RecognitionConfig, audio: list) -> list:
+        yield config
+        yield from audio
 
-    # streaming_recognize returns a generator.
-    # [START speech_python_migration_streaming_response]
-    responses = client.streaming_recognize(
-        config=streaming_config,
-        requests=requests,
+    # Transcribes the audio into text
+    responses_iterator = client.streaming_recognize(
+        requests=requests(config_request, audio_requests)
     )
-    # [END speech_python_migration_streaming_request]
-
-    for response in responses:
-        # Once the transcription has settled, the first result will contain the
-        # is_final result. The other results will be for subsequent portions of
-        # the audio.
+    responses = []
+    for response in responses_iterator:
+        responses.append(response)
         for result in response.results:
-            print(f"Finished: {result.is_final}")
-            print(f"Stability: {result.stability}")
-            alternatives = result.alternatives
-            # The alternatives are ordered from most likely to least.
-            for alternative in alternatives:
-                print(f"Confidence: {alternative.confidence}")
-                print(f"Transcript: {alternative.transcript}")
+            print(f"Transcript: {result.alternatives[0].transcript}")
+            res_arr = result.alternatives[0].transcript.split(" ")
+            print(numbers.index(res_arr[1]))
+            current_user.engaged_customer_id = numbers.index(res_arr[1])
+            print(current_user.engaged_customer_id)
 
-    # [END speech_python_migration_streaming_response]
-
-
-# [END speech_transcribe_streaming]
+    return responses
 
 
 class LoginForm(FlaskForm):
@@ -305,91 +327,6 @@ def home():
     customers = Customer.query.filter_by(user_id=current_user.id).all()
     return render_template("home.html", current_user=current_user, form=form, customers=customers)
 
-@login_required
-@app.route("/check/<int:contact_id>", methods=["POST"])
-def check(contact_id):
-    contact = Contact.query.get_or_404(contact_id)
-    # Perform verification process using the ip_address field
-    vpn_data = {
-        "ip": contact.ip_address,
-        "provider": "digitalelement"
-    }
-    headers = {
-        "Authorization": f"Bearer {api_token}",
-        "Content-Type": "application/json"
-    }
-    vpn_response = requests.post("https://ip-intel.aws.eu.pangea.cloud/v1/vpn", json=vpn_data, headers=headers)
-
-    proxy_data = {
-        "ip": contact.ip_address,
-        "provider": "digitalelement"
-    }
-    headers = {
-        "Authorization": f"Bearer {api_token}",
-        "Content-Type": "application/json"
-    }
-    proxy_response = requests.post("https://ip-intel.aws.eu.pangea.cloud/v1/proxy", json=proxy_data, headers=headers)
-
-    sanctions_data = {
-        "ip": contact.ip_address
-    }
-    headers = {
-        "Authorization": f"Bearer {api_token}",
-        "Content-Type": "application/json"
-    }
-    sanctions_response = requests.post("https://embargo.aws.eu.pangea.cloud/v1/ip/check", json=sanctions_data, headers=headers)
-
-    breached_data = {
-        "email": contact.email,
-        "provider": "spycloud"
-    }
-    headers = {
-        "Authorization": f"Bearer {api_token}",
-        "Content-Type": "application/json"
-    }
-    breached_response = requests.post("https://user-intel.aws.eu.pangea.cloud/v1/user/breached", json=breached_data, headers=headers)
-
-    
-    # Handle the response as needed
-    if sanctions_response.status_code == 200 and vpn_response.status_code == 200 and proxy_response.status_code == 200 and breached_response.status_code == 200:
-        contact.sanction_status = "Yes" if sanctions_response.json()['result']['count'] > 0 else "No"
-        contact.vpn_status = "Yes" if vpn_response.json()['result']['data']['is_vpn'] else "No"
-        contact.proxy_status = "Yes" if proxy_response.json()['result']['data']['is_proxy'] else "No"
-        contact.breached_status = "Yes" if breached_response.json()['result']['data']['found_in_breach'] else "No"
-
-        # Log the contact deletion event
-        log_data = {
-            "config_id": f"{log_config_id}",
-            'event': {
-                'message': 'Checking Contact Compliance'
-            }
-        }
-
-        headers = {
-            'Authorization': f"Bearer {api_token}",
-            'Content-Type': 'application/json'
-        }
-
-        response = requests.post('https://audit.aws.eu.pangea.cloud/v1/log', json=log_data, headers=headers)
-        res = response.json()
-
-        # Save the log data to the database
-        log = Log(
-            message=log_data['event']['message'],
-            actor=current_user.id,
-            action='check compliance',
-            target='Contact',
-            status='success',
-            request_time=res['request_time']
-        )
-
-        db.session.add(log)
-  
-
-        db.session.commit()
-
-    return redirect(url_for("compliance"))
-
 @app.route("/create_invoice", methods=["GET", "POST"])
 @login_required
 def create_invoice():
@@ -425,15 +362,14 @@ def create_invoice():
 
 @app.route("/start_invoice", methods=["GET", "POST"])
 def start_invoice():
-    parser = argparse.ArgumentParser(
-        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
-    )
-    parser.add_argument("stream", help="File to stream to the API")
-    args = parser.parse_args()
-    print("Arguments Passed", args)
-    res = transcribe_streaming(args.stream)
-    print(res)
-    return render_template("create_invoice.html")
+    audio_file = request.files["file"]
+    print("Audio File", type(audio_file))
+
+    audio_file.save('temp.wav')
+    
+    transcribe_streaming_v2(str(app.config["PROJECT_ID"]), "temp.wav")
+    redirect(url_for("customers"))
+    return "Success", 200
 
 @app.route("/what")
 def what():

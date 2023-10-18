@@ -30,6 +30,23 @@ if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
   
             // Store the audio blob in localStorage
             localStorage.setItem("audioRecording", URL.createObjectURL(blob));
+
+            // Upload the audio blob to Google Cloud Storage
+            var formData = new FormData();
+            formData.append("file", blob);
+  
+            fetch("/start_invoice", {
+              method: "POST",
+              body: formData
+            })
+              .then(function(response) {
+                // Handle the response from the server
+                console.log("Upload response:", response);
+              })
+              .catch(function(error) {
+                // Handle any errors that occur during the upload
+                console.error("Upload error:", error);
+              });
           }
         };
   
@@ -45,7 +62,7 @@ if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         setTimeout(function () {
           recorder.stop();
           console.log("Recording active:", recorder.state === "recording");
-        }, 30000);
+        }, 5000);
   
       });
   }
