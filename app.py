@@ -60,6 +60,7 @@ class User(UserMixin, db.Model):
     address = db.Column(db.String(200))
     session_engaged = db.Column(db.Boolean, default=False)
     engaged_customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'))
+    active_invoice_id = db.Column(db.Integer, db.ForeignKey('invoice.id'))
 
 class Customer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -171,6 +172,8 @@ def transcribe_streaming_v2(
     # Instantiates a client
     client = SpeechClient()
 
+    invoices = Invoice.query.all()
+
     project_id = app.config["PROJECT_ID"]
 
     # Reads a file as bytes
@@ -214,9 +217,20 @@ def transcribe_streaming_v2(
         for result in response.results:
             print(f"Transcript: {result.alternatives[0].transcript}")
             res_arr = result.alternatives[0].transcript.split(" ")
-            print(numbers.index(res_arr[1]))
-            current_user.engaged_customer_id = numbers.index(res_arr[1])
-            print(current_user.engaged_customer_id)
+            if current_user.session_engaged and not current_user.engaged_customer_id:
+                print(numbers.index(res_arr[1]))
+                current_user.engaged_customer_id = numbers.index(res_arr[1])
+                print(current_user.engaged_customer_id)
+                if not current_user.active_invoice_id:
+                    new_invoice = Invoice()
+                    db.session.add(new_invoice)
+                    db.session.commit()
+
+                    # Assign the new invoice ID to the variable
+                    current_user.active_invoice_id = new_invoice.id
+            else:
+                pass
+                
 
     return responses
 
@@ -330,6 +344,7 @@ def home():
 @app.route("/create_invoice", methods=["GET", "POST"])
 @login_required
 def create_invoice():
+    current_user.session_engaged = True
     if request.method == "POST":
         customer_id = request.form.get("customer_id")
         invoice_number = request.form.get("invoice_number")
