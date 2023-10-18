@@ -25,7 +25,7 @@ import moment
 import requests
 import os
 
-
+from square.client import Client
 
 app = Flask(__name__)
 
@@ -42,6 +42,8 @@ app.config["MAIL_USE_SSL"] = True
 app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")  # Replace with your email address
 app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD") # Replace with your email password
 app.config["PROJECT_ID"] = os.getenv("PROJECT_ID") 
+app.config["APP_ACCESS_TOKEN"] = os.getenv("APP_ACCESS_TOKEN")
+app.config["LOCATION_ID"] = os.getenv("LOCATION_ID")
 
 mail = Mail(app)
 
@@ -91,9 +93,9 @@ class Product(db.Model):
 class Invoice(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
-    invoice_number = db.Column(db.String(20), nullable=False)
-    invoice_date = db.Column(db.DateTime, nullable=False)
-    total_amount = db.Column(db.Float, nullable=False)
+    order_id = db.Column(db.String(20), nullable=False)
+    invoice_date = db.Column(db.DateTime)
+    total_amount = db.Column(db.Float)
     status = db.Column(db.String(20), nullable=False)
     shipping_address = db.Column(db.String(200))
     billing_address = db.Column(db.String(200))
@@ -131,6 +133,14 @@ with app.app_context():
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+square_access_token = app.config["APP_ACCESS_TOKEN"]
+
+square_client = Client(
+    access_token=square_access_token,
+    environment="sandbox"
+)
+
 
 def create_api_key(project_id: str, suffix: str) -> Key:
     # Create the API Keys client.
@@ -174,6 +184,8 @@ def transcribe_streaming_v2(
 
     invoices = Invoice.query.all()
 
+    location_id = app.config["LOCATION_ID"]
+
     project_id = app.config["PROJECT_ID"]
 
     # Reads a file as bytes
@@ -211,23 +223,42 @@ def transcribe_streaming_v2(
     responses_iterator = client.streaming_recognize(
         requests=requests(config_request, audio_requests)
     )
+
     responses = []
+    current_user.session_engaged = True
+    
     for response in responses_iterator:
         responses.append(response)
         for result in response.results:
             print(f"Transcript: {result.alternatives[0].transcript}")
             res_arr = result.alternatives[0].transcript.split(" ")
+            print(current_user.session_engaged)
+            print(current_user.engaged_customer_id)
             if current_user.session_engaged and not current_user.engaged_customer_id:
                 print(numbers.index(res_arr[1]))
                 current_user.engaged_customer_id = numbers.index(res_arr[1])
                 print(current_user.engaged_customer_id)
                 if not current_user.active_invoice_id:
-                    new_invoice = Invoice()
+                    result = square_client.orders.create_order(
+                        body = {
+                            "order": {
+                                "location_id": location_id
+                                }
+                            }
+                    )
+
+                    if result.is_success():
+                        print(result.body)
+                        order_id = result.body["order"]["id"]
+                    elif result.is_error():
+                        print(result.errors)
+                    new_invoice = Invoice(status="Pending", customer_id=current_user.engaged_customer_id, order_id=order_id)
                     db.session.add(new_invoice)
                     db.session.commit()
 
                     # Assign the new invoice ID to the variable
                     current_user.active_invoice_id = new_invoice.id
+                
             else:
                 pass
                 
@@ -345,6 +376,7 @@ def home():
 @login_required
 def create_invoice():
     current_user.session_engaged = True
+    print(current_user.session_engaged)
     if request.method == "POST":
         customer_id = request.form.get("customer_id")
         invoice_number = request.form.get("invoice_number")

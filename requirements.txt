@@ -11,3 +11,4 @@ moment
 google-cloud-speech
 google-cloud-api-keys
 Werkzeug==2.3.0
+squareup
