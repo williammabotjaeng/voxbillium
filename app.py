@@ -14,6 +14,10 @@ from datetime import datetime
 from google.cloud import api_keys_v2
 from google.cloud.api_keys_v2 import Key
 
+import argparse
+
+from google.cloud import speech
+
 import moment
 import requests
 import os
@@ -123,20 +127,6 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 def create_api_key(project_id: str, suffix: str) -> Key:
-    """
-    Creates and restrict an API key. Add the suffix for uniqueness.
-
-    TODO(Developer):
-    1. Before running this sample,
-      set up ADC as described in https://cloud.google.com/docs/authentication/external/set-up-adc
-    2. Make sure you have the necessary permission to create API keys.
-
-    Args:
-        project_id: Google Cloud project id.
-
-    Returns:
-        response: Returns the created API Key.
-    """
     # Create the API Keys client.
     client = api_keys_v2.ApiKeysClient()
 
@@ -155,6 +145,59 @@ def create_api_key(project_id: str, suffix: str) -> Key:
     # For authenticating with the API key, use the value in "response.key_string".
     # To restrict the usage of this API key, use the value in "response.name".
     return response
+
+
+# [START speech_transcribe_streaming]
+def transcribe_streaming(stream_file: str) -> speech.RecognitionConfig:
+    """Streams transcription of the given audio file."""
+
+    client = speech.SpeechClient()
+
+    # [START speech_python_migration_streaming_request]
+    with open(stream_file, "rb") as audio_file:
+        content = audio_file.read()
+
+    # In practice, stream should be a generator yielding chunks of audio data.
+    stream = [content]
+
+    requests = (
+        speech.StreamingRecognizeRequest(audio_content=chunk) for chunk in stream
+    )
+
+    config = speech.RecognitionConfig(
+        encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+        sample_rate_hertz=16000,
+        language_code="en-US",
+    )
+
+    streaming_config = speech.StreamingRecognitionConfig(config=config)
+
+    # streaming_recognize returns a generator.
+    # [START speech_python_migration_streaming_response]
+    responses = client.streaming_recognize(
+        config=streaming_config,
+        requests=requests,
+    )
+    # [END speech_python_migration_streaming_request]
+
+    for response in responses:
+        # Once the transcription has settled, the first result will contain the
+        # is_final result. The other results will be for subsequent portions of
+        # the audio.
+        for result in response.results:
+            print(f"Finished: {result.is_final}")
+            print(f"Stability: {result.stability}")
+            alternatives = result.alternatives
+            # The alternatives are ordered from most likely to least.
+            for alternative in alternatives:
+                print(f"Confidence: {alternative.confidence}")
+                print(f"Transcript: {alternative.transcript}")
+
+    # [END speech_python_migration_streaming_response]
+
+
+# [END speech_transcribe_streaming]
+
 
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[InputRequired(), Length(min=4, max=100)])
@@ -380,6 +423,17 @@ def create_invoice():
     
     return render_template("create_invoice.html", current_user=current_user)
 
+@app.route("/start_invoice", methods=["GET", "POST"])
+def start_invoice():
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument("stream", help="File to stream to the API")
+    args = parser.parse_args()
+    print("Arguments Passed", args)
+    res = transcribe_streaming(args.stream)
+    print(res)
+    return render_template("create_invoice.html")
 
 @app.route("/what")
 def what():
