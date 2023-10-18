@@ -8,22 +8,22 @@ document.addEventListener("DOMContentLoaded", function() {
       steps: [
         {
           element: form,
-          intro: "Welcome to the guided tour! This is the form area where you can create a new contact.",
+          intro: "Welcome to the guided tour! This is the form area where you can create a new customer.",
           position: "top",
         },
         {
           element: ".column.tile.purple",
-          intro: "Here you can see all your contacts. Each contact's first name and status are displayed.",
+          intro: "Here you can see all your customers. Each customer's first name and number of invoices are displayed.",
           position: "top",
         },
         {
           element: ".column.tile.teal",
-          intro: "In this section, you can find your trusted contacts.",
+          intro: "In this section, you can find your latest payments.",
           position: "top",
         },
         {
           element: ".column.tile.deep-orange",
-          intro: "Here you can find your untrusted contacts.",
+          intro: "Here you can find your latest invoices. Their dates, total amount and status are displayed.",
           position: "top",
         },
       ],

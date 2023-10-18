@@ -9,11 +9,23 @@ from wtforms.validators import InputRequired, Length, DataRequired, Email
 from dotenv import load_dotenv
 from datetime import datetime
 
+# from google.cloud import api_keys_v2
+# from google.cloud.api_keys_v2 import Key
+from google.cloud import api_keys_v2
+from google.cloud.api_keys_v2 import Key
+
+from google.cloud.speech_v2 import SpeechClient
+from google.cloud.speech_v2.types import cloud_speech
+
+import argparse
+
+from google.cloud import speech
+
 import moment
 import requests
 import os
 
-
+from square.client import Client
 
 app = Flask(__name__)
 
@@ -29,6 +41,9 @@ app.config["MAIL_PORT"] = 465
 app.config["MAIL_USE_SSL"] = True
 app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")  # Replace with your email address
 app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD") # Replace with your email password
+app.config["PROJECT_ID"] = os.getenv("PROJECT_ID") 
+app.config["APP_ACCESS_TOKEN"] = os.getenv("APP_ACCESS_TOKEN")
+app.config["LOCATION_ID"] = os.getenv("LOCATION_ID")
 
 mail = Mail(app)
 
@@ -45,6 +60,9 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(100), nullable=False)
     phone_number = db.Column(db.String(15))
     address = db.Column(db.String(200))
+    session_engaged = db.Column(db.Boolean, default=False)
+    engaged_customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'))
+    active_invoice_id = db.Column(db.Integer, db.ForeignKey('invoice.id'))
 
 class Customer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -75,9 +93,9 @@ class Product(db.Model):
 class Invoice(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
-    invoice_number = db.Column(db.String(20), nullable=False)
-    invoice_date = db.Column(db.DateTime, nullable=False)
-    total_amount = db.Column(db.Float, nullable=False)
+    order_id = db.Column(db.String(20), nullable=False)
+    invoice_date = db.Column(db.DateTime)
+    total_amount = db.Column(db.Float)
     status = db.Column(db.String(20), nullable=False)
     shipping_address = db.Column(db.String(200))
     billing_address = db.Column(db.String(200))
@@ -115,6 +133,138 @@ with app.app_context():
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+square_access_token = app.config["APP_ACCESS_TOKEN"]
+
+square_client = Client(
+    access_token=square_access_token,
+    environment="sandbox"
+)
+
+
+def create_api_key(project_id: str, suffix: str) -> Key:
+    # Create the API Keys client.
+    client = api_keys_v2.ApiKeysClient()
+
+    key = api_keys_v2.Key()
+    key.display_name = f"My first API key - {suffix}"
+
+    # Initialize request and set arguments.
+    request = api_keys_v2.CreateKeyRequest()
+    request.parent = f"projects/{project_id}/locations/global"
+    request.key = key
+
+    # Make the request and wait for the operation to complete.
+    response = client.create_key(request=request).result()
+
+    print(f"Successfully created an API key: {response.name}")
+    # For authenticating with the API key, use the value in "response.key_string".
+    # To restrict the usage of this API key, use the value in "response.name".
+    return response
+
+
+def transcribe_streaming_v2(
+    project_id: str,
+    audio_file: str,
+) -> cloud_speech.StreamingRecognizeResponse:
+    """Transcribes audio from audio file stream.
+
+    Args:
+        project_id: The GCP project ID.
+        audio_file: The path to the audio file to transcribe.
+
+    Returns:
+        The response from the transcribe method.
+    """
+
+    numbers = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine',
+           'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty']
+    # Instantiates a client
+    client = SpeechClient()
+
+    invoices = Invoice.query.all()
+
+    location_id = app.config["LOCATION_ID"]
+
+    project_id = app.config["PROJECT_ID"]
+
+    # Reads a file as bytes
+    with open(audio_file, "rb") as f:
+        content = f.read()
+
+    # In practice, stream should be a generator yielding chunks of audio data
+    chunk_length = len(content) // 5
+    stream = [
+        content[start : start + chunk_length]
+        for start in range(0, len(content), chunk_length)
+    ]
+    audio_requests = (
+        cloud_speech.StreamingRecognizeRequest(audio=audio) for audio in stream
+    )
+
+    recognition_config = cloud_speech.RecognitionConfig(
+        auto_decoding_config=cloud_speech.AutoDetectDecodingConfig(),
+        language_codes=["en-US"],
+        model="long",
+    )
+    streaming_config = cloud_speech.StreamingRecognitionConfig(
+        config=recognition_config
+    )
+    config_request = cloud_speech.StreamingRecognizeRequest(
+        recognizer=f"projects/{project_id}/locations/global/recognizers/_",
+        streaming_config=streaming_config,
+    )
+
+    def requests(config: cloud_speech.RecognitionConfig, audio: list) -> list:
+        yield config
+        yield from audio
+
+    # Transcribes the audio into text
+    responses_iterator = client.streaming_recognize(
+        requests=requests(config_request, audio_requests)
+    )
+
+    responses = []
+    current_user.session_engaged = True
+    
+    for response in responses_iterator:
+        responses.append(response)
+        for result in response.results:
+            print(f"Transcript: {result.alternatives[0].transcript}")
+            res_arr = result.alternatives[0].transcript.split(" ")
+            print(current_user.session_engaged)
+            print(current_user.engaged_customer_id)
+            if current_user.session_engaged and not current_user.engaged_customer_id:
+                print(numbers.index(res_arr[1]))
+                current_user.engaged_customer_id = numbers.index(res_arr[1])
+                print(current_user.engaged_customer_id)
+                if not current_user.active_invoice_id:
+                    result = square_client.orders.create_order(
+                        body = {
+                            "order": {
+                                "location_id": location_id
+                                }
+                            }
+                    )
+
+                    if result.is_success():
+                        print(result.body)
+                        order_id = result.body["order"]["id"]
+                    elif result.is_error():
+                        print(result.errors)
+                    new_invoice = Invoice(status="Pending", customer_id=current_user.engaged_customer_id, order_id=order_id)
+                    db.session.add(new_invoice)
+                    db.session.commit()
+
+                    # Assign the new invoice ID to the variable
+                    current_user.active_invoice_id = new_invoice.id
+                
+            else:
+                pass
+                
+
+    return responses
+
 
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[InputRequired(), Length(min=4, max=100)])
@@ -217,97 +367,16 @@ def register():
 @app.route("/home")
 def home():
     form = CustomerForm()
+    api_key_res = create_api_key(app.config["PROJECT_ID"], "billium")
+    print("API KEY Response", api_key_res)
     customers = Customer.query.filter_by(user_id=current_user.id).all()
     return render_template("home.html", current_user=current_user, form=form, customers=customers)
-
-@login_required
-@app.route("/check/<int:contact_id>", methods=["POST"])
-def check(contact_id):
-    contact = Contact.query.get_or_404(contact_id)
-    # Perform verification process using the ip_address field
-    vpn_data = {
-        "ip": contact.ip_address,
-        "provider": "digitalelement"
-    }
-    headers = {
-        "Authorization": f"Bearer {api_token}",
-        "Content-Type": "application/json"
-    }
-    vpn_response = requests.post("https://ip-intel.aws.eu.pangea.cloud/v1/vpn", json=vpn_data, headers=headers)
-
-    proxy_data = {
-        "ip": contact.ip_address,
-        "provider": "digitalelement"
-    }
-    headers = {
-        "Authorization": f"Bearer {api_token}",
-        "Content-Type": "application/json"
-    }
-    proxy_response = requests.post("https://ip-intel.aws.eu.pangea.cloud/v1/proxy", json=proxy_data, headers=headers)
-
-    sanctions_data = {
-        "ip": contact.ip_address
-    }
-    headers = {
-        "Authorization": f"Bearer {api_token}",
-        "Content-Type": "application/json"
-    }
-    sanctions_response = requests.post("https://embargo.aws.eu.pangea.cloud/v1/ip/check", json=sanctions_data, headers=headers)
-
-    breached_data = {
-        "email": contact.email,
-        "provider": "spycloud"
-    }
-    headers = {
-        "Authorization": f"Bearer {api_token}",
-        "Content-Type": "application/json"
-    }
-    breached_response = requests.post("https://user-intel.aws.eu.pangea.cloud/v1/user/breached", json=breached_data, headers=headers)
-
-    
-    # Handle the response as needed
-    if sanctions_response.status_code == 200 and vpn_response.status_code == 200 and proxy_response.status_code == 200 and breached_response.status_code == 200:
-        contact.sanction_status = "Yes" if sanctions_response.json()['result']['count'] > 0 else "No"
-        contact.vpn_status = "Yes" if vpn_response.json()['result']['data']['is_vpn'] else "No"
-        contact.proxy_status = "Yes" if proxy_response.json()['result']['data']['is_proxy'] else "No"
-        contact.breached_status = "Yes" if breached_response.json()['result']['data']['found_in_breach'] else "No"
-
-        # Log the contact deletion event
-        log_data = {
-            "config_id": f"{log_config_id}",
-            'event': {
-                'message': 'Checking Contact Compliance'
-            }
-        }
-
-        headers = {
-            'Authorization': f"Bearer {api_token}",
-            'Content-Type': 'application/json'
-        }
-
-        response = requests.post('https://audit.aws.eu.pangea.cloud/v1/log', json=log_data, headers=headers)
-        res = response.json()
-
-        # Save the log data to the database
-        log = Log(
-            message=log_data['event']['message'],
-            actor=current_user.id,
-            action='check compliance',
-            target='Contact',
-            status='success',
-            request_time=res['request_time']
-        )
-
-        db.session.add(log)
-  
-
-        db.session.commit()
-
-    return redirect(url_for("compliance"))
 
 @app.route("/create_invoice", methods=["GET", "POST"])
 @login_required
 def create_invoice():
+    current_user.session_engaged = True
+    print(current_user.session_engaged)
     if request.method == "POST":
         customer_id = request.form.get("customer_id")
         invoice_number = request.form.get("invoice_number")
@@ -338,6 +407,16 @@ def create_invoice():
     
     return render_template("create_invoice.html", current_user=current_user)
 
+@app.route("/start_invoice", methods=["GET", "POST"])
+def start_invoice():
+    audio_file = request.files["file"]
+    print("Audio File", type(audio_file))
+
+    audio_file.save('temp.wav')
+    
+    transcribe_streaming_v2(str(app.config["PROJECT_ID"]), "temp.wav")
+    redirect(url_for("customers"))
+    return "Success", 200
 
 @app.route("/what")
 def what():
@@ -379,8 +458,6 @@ def invoices():
     for customer in customers:
         invoices.extend(customer.invoices)
     return render_template("invoices.html", current_user=current_user, invoices=invoices)
-
-import requests
 
 @app.route("/create_customer", methods=["GET", "POST"])
 @login_required

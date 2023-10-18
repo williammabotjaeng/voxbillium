@@ -100,21 +100,6 @@
    <script src="{{ url_for('static', filename='js/guided_tour.js') }}"></script>
    <script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
    <script src="{{ url_for('static', filename='js/pagination.js') }}"></script>
-   <script>
-     function toggleInvoice() {
-      var element = document.getElementById("invoicemic");
-      element.style.backgroundColor = "teal";
-      element.style.borderRadius = "50%";
-
-      // Use D3 to make the mic's background beep
-      d3.select("#invoicemic")
-        .transition()
-        .duration(500)
-        .style("background-color", "orange")
-        .transition()
-        .duration(500)
-        .style("background-color", "teal");
-    }
-   </script>
+   <script src="{{ url_for('static', filename='js/voice_recording.js') }}"></script>
 </body>
 </html>

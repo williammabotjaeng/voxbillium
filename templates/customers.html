@@ -36,7 +36,7 @@
                         <td class="centered-cells"><form action="/customers/edit/{{ customer.id }}"><button class="action-btn" type="submit"><span class="icon">
                             <i class="fas fa-pencil-alt"></i>
                           </span></button></form></td>
-                        <td class="centered-cells"><form method="post" action="/assign/{{ customer.id }}" style="margin-right: 10px; text-align: center;"><button class="action-btn" type="submit">
+                        <td class="centered-cells"><form method="get" action="/assign/{{ customer.id }}" style="margin-right: 10px; text-align: center;"><button class="action-btn" type="submit">
                             <span class="icon">
                                 <i class="fas fa-microphone"></i>
                               </span>
