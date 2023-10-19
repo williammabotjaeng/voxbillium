@@ -1,0 +1,61 @@
+{% extends 'create_layout.html' %}
+
+{% block content %}
+<div style="margin: 20px; display: grid; grid-template-columns: 1fr 1fr; grid-gap: 20px;">
+    <div>
+        <h1 class="m-5">Create Product</h1>
+        <form method="post" action="/create_product">
+            {{ form.csrf_token }}
+            <div class="field">
+                <label class="label">Name</label>
+                <div class="control">
+                    {{ form.name(class="input") }}
+                </div>
+            </div>
+            <div class="field">
+                <label class="label">Price</label>
+                <div class="control">
+                    {{ form.price(class="input") }}
+                </div>
+            </div>
+            <div class="field">
+                <label class="label">Description</label>
+                <div class="control">
+                    {{ form.description(class="input") }}
+                </div>
+            </div>
+            <div class="field">
+                <label class="label">Category</label>
+                <div class="control">
+                    {{ form.category(class="input") }}
+                </div>
+            </div>
+        </div>
+        <div style="margin-top: 66px">
+            <div class="field">
+                <label class="label">Image URL</label>
+                <div class="control">
+                    {{ form.image_url(class="input") }}
+                </div>
+            </div>
+            <div class="field">
+                <label class="label">SKU Code</label>
+                <div class="control">
+                    {{ form.sku_code(class="input") }}
+                </div>
+            </div>
+            <div class="field" style="margin-top: 80px">
+                <label class="label">User ID</label>
+                <div class="control">
+                    {{ form.user_id(class="input", value=current_user.id, type="hidden") }}
+                </div>
+            </div>
+            <div class="field">
+                <div class="control">
+                    {{ form.submit(class="button is-primary") }}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
