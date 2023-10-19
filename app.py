@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_wtf import FlaskForm
 from flask_mail import Message, Mail
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, TextAreaField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, TextAreaField, FloatField
 from wtforms.validators import InputRequired, Length, DataRequired, Email
 from dotenv import load_dotenv
 from datetime import datetime
@@ -16,6 +16,8 @@ from google.cloud.api_keys_v2 import Key
 
 from google.cloud.speech_v2 import SpeechClient
 from google.cloud.speech_v2.types import cloud_speech
+
+from datetime import date
 
 import argparse
 
@@ -62,6 +64,8 @@ class User(UserMixin, db.Model):
     address = db.Column(db.String(200))
     session_engaged = db.Column(db.Boolean, default=False)
     engaged_customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'))
+    engaged_product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
+    engaged_invoice_item_id = db.Column(db.Integer, db.ForeignKey('invoice_item.id'))
     active_invoice_id = db.Column(db.Integer, db.ForeignKey('invoice.id'))
 
 class Customer(db.Model):
@@ -86,6 +90,8 @@ class Product(db.Model):
     image_url = db.Column(db.String(200))
     sku_code = db.Column(db.String(50))
 
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
     # Add any other fields relevant to the product model
     def __repr__(self):
         return f"Product(id={self.id}, name='{self.name}', price={self.price})"
@@ -99,7 +105,7 @@ class Invoice(db.Model):
     status = db.Column(db.String(20), nullable=False)
     shipping_address = db.Column(db.String(200))
     billing_address = db.Column(db.String(200))
-    payment_method_id = db.Column(db.Integer, db.ForeignKey('payment_method.id'), nullable=False)
+    payment_method_id = db.Column(db.Integer, db.ForeignKey('payment_method.id'))
 
     items = db.relationship('InvoiceItem', backref='invoice', lazy=True)
 
@@ -107,7 +113,7 @@ class InvoiceItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     invoice_id = db.Column(db.Integer, db.ForeignKey('invoice.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
+    quantity = db.Column(db.Integer)
 
 class PaymentMethod(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -252,15 +258,39 @@ def transcribe_streaming_v2(
                         order_id = result.body["order"]["id"]
                     elif result.is_error():
                         print(result.errors)
-                    new_invoice = Invoice(status="Pending", customer_id=current_user.engaged_customer_id, order_id=order_id)
+                    temp_date = date.today()
+                    new_invoice = Invoice(status="Pending", customer_id=current_user.engaged_customer_id, order_id=order_id, invoice_date=temp_date)
+                    
+                    
                     db.session.add(new_invoice)
                     db.session.commit()
-
-                    # Assign the new invoice ID to the variable
+                    print("Invoice ID", new_invoice.id)
+                    print("Invoice Object", new_invoice)
                     current_user.active_invoice_id = new_invoice.id
-                
+                    db.session.commit()
             else:
-                pass
+                res_arr = result.alternatives[0].transcript.split(" ")
+                current_user.engaged_product_id = numbers.index(res_arr[1])
+                temp_quantity = numbers.index(res_arr[3])
+                active_invoice = Invoice.query.filter_by(id=current_user.active_invoice_id).all()
+                engaged_product = Product.query.filter_by(id=current_user.engaged_product_id).all()
+                print(engaged_product[0].price)
+                print(type(active_invoice[0].total_amount))
+                if active_invoice[0].total_amount is None:
+                    active_invoice[0].total_amount = engaged_product[0].price
+                else:
+                    active_invoice[0].total_amount += engaged_product[0].price
+                
+                print("Response", res_arr)
+                temp_invoice_item = InvoiceItem(
+                    product_id=current_user.engaged_product_id,
+                    invoice_id=current_user.active_invoice_id,
+                    quantity=temp_quantity
+                )
+                print("Temp Invoice", temp_invoice_item)
+                db.session.add(temp_invoice_item)
+                db.session.commit()
+                
                 
 
     return responses
@@ -281,7 +311,17 @@ class CustomerForm(FlaskForm):
     phone_number = StringField('Phone Number')
     address = StringField('Address')
     user_id = StringField('User ID', validators=[InputRequired()])
-    submit = SubmitField('Create Customer')
+    submit = SubmitField('Save Customer')
+
+class ProductForm(FlaskForm):
+    name = StringField('Name', validators=[InputRequired(), Length(min=2, max=100)])
+    price = StringField('Price', validators=[InputRequired()])
+    description = StringField('Description', validators=[Length(max=200)])
+    category = StringField('Category', validators=[Length(max=50)])
+    image_url = StringField('Image URL', validators=[Length(max=200)])
+    sku_code = StringField('SKU Code', validators=[Length(max=50)])
+    user_id = StringField('User ID')
+    submit = SubmitField('Save Product')
 
 class ContactUsForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
@@ -407,6 +447,43 @@ def create_invoice():
     
     return render_template("create_invoice.html", current_user=current_user)
 
+@app.route("/create_product", methods=["GET", "POST"])
+@login_required
+def create_product():
+    current_user.session_engaged = True
+    print(current_user.session_engaged)
+    form = ProductForm()
+    print("Form Validation", form.validate_on_submit())
+    print("Form Errors", form.errors)
+    if form.validate_on_submit():
+        name = form.name.data
+        price = form.price.data
+        description = form.description.data
+        category = form.category.data
+        image_url = form.image_url.data
+        sku_code = form.sku_code.data
+        user_id = form.user_id.data
+
+        new_product = Product(
+            name=name,
+            price=price,
+            description=description,
+            category=category,
+            image_url=image_url,
+            sku_code=sku_code,
+            user_id=user_id
+        )
+
+        db.session.add(new_product)
+        db.session.commit()
+
+        print(Product.query.filter_by(user_id=user_id).all())
+
+        return redirect(url_for("products"))
+    
+    return render_template("create_product.html", form=form, current_user=current_user)
+
+
 @app.route("/start_invoice", methods=["GET", "POST"])
 def start_invoice():
     audio_file = request.files["file"]
@@ -456,8 +533,15 @@ def invoices():
     customers = Customer.query.filter_by(user_id=current_user.id).all()
     invoices = []
     for customer in customers:
+        print(customer)
         invoices.extend(customer.invoices)
     return render_template("invoices.html", current_user=current_user, invoices=invoices)
+
+@app.route("/products")
+@login_required
+def products():
+    products = Product.query.filter_by(user_id=current_user.id).all()
+    return render_template("products.html", current_user=current_user, products=products)
 
 @app.route("/create_customer", methods=["GET", "POST"])
 @login_required
